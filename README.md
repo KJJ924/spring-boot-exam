@@ -2,7 +2,7 @@
 JPA 기반 웹 애플리케이션 강좌 개발 정리 및 소스코드
 
 
-2020-11-15 -1일차
+# 2020-11-15 -1일차
 롬복 사용시 주의사항
 https://kwonnam.pe.kr/wiki/java/lombok/pitfall
 
