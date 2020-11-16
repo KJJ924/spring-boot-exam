@@ -33,3 +33,35 @@ id 는 DB의 Key 값이기 때문에
   - boolean supports(Class<?> aClass) : Validator가 검증할 수 있는 클래스인 지를 판단하는 매서드
   - void validate(Object target, Errors error) : 실제 검증 로직이 이루어지는 메서드
     - > 참고 Link https://engkimbs.tistory.com/728
+
+## 2020-11-15 -2일차
+#### 객체지향 설계 느낀점.(묻지말고 객체에게 시켜라)
+- account 객체의 emailCheckToken 필드에 값을 set 할때 평소에는 클래스에 setter를 만들고 setter를 이용하여 값을 추가했다.
+```
+public class main {
+  public static void main(String[] args) {
+    Account acoount = new Account();
+    account.setEmailCheckToken(UUID.randomUUID().toString()); // 이런식
+  }
+}
+```
+- 하지만 객체 내에 필드 값을 setting 하는 메서드를 만들고 객체에게 시키면 내가 객체를 묻지 않고 시킬수 있는 형태가 된다.
+```
+public class Account {
+  private String emailCheckToken;
+  ....
+  /생략
+  
+  public void generateEmailCheckToken() {
+        this.emailCheckToken = UUID.randomUUID().toString();
+    }
+}
+//===========================================================
+public class main {
+  public static void main(String[] args) {
+    Account acoount = new Account();
+    account.generateEmailCheckToken() // 이런식
+  }
+}
+```
+- 장점: 객체정보이용하는 행동을 객체 내부에 둠으로써 캡슐화를 보장하고 결합도를 낮게 유지 할 수 있다.
