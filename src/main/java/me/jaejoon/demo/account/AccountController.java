@@ -22,8 +22,8 @@ import java.time.LocalDateTime;
 public class AccountController {
 
     private final SignUpFormValidation signUpFormValidation;
-    private final AccountRepository repository;
-    private final JavaMailSender mailSender;
+    private final AccountService service;
+
 
     @InitBinder("signUpForm")
     public void initBinder(WebDataBinder webDataBinder){
@@ -41,22 +41,9 @@ public class AccountController {
         if(errors.hasErrors()){
             return "account/sign-up";
         }
-        Account account = Account.builder()
-                .nickname(signUpForm.getNickname())
-                .password(signUpForm.getPassword())
-                .email(signUpForm.getEmail())
-                .studyCreatedByWeb(true)
-                .studyEnrollmentResultByWeb(true)
-                .studyUpdateByWeb(true)
-                .joinedAt(LocalDateTime.now())
-                .build();
-        Account newAccount = repository.save(account);
-        newAccount.generateEmailCheckToken();
-        SimpleMailMessage mailMessage = new SimpleMailMessage();
-        mailMessage.setSubject("회원가입 인증메일");
-        mailMessage.setText("/check-email-token?token="+newAccount.getEmailCheckToken()
-                +"&email="+newAccount.getEmail());
-        mailSender.send(mailMessage);
+        service.processNewAccount(signUpForm);
         return "redirect:/";
     }
+
+
 }
