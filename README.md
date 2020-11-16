@@ -34,7 +34,7 @@ id 는 DB의 Key 값이기 때문에
   - void validate(Object target, Errors error) : 실제 검증 로직이 이루어지는 메서드
     - > 참고 Link https://engkimbs.tistory.com/728
 
-## 2020-11-15 -2일차
+## 2020-11-16 -2일차
 #### 객체지향 설계 느낀점.(묻지말고 객체에게 시켜라)
 - account 객체의 emailCheckToken 필드에 값을 set 할때 평소에는 클래스에 setter를 만들고 setter를 이용하여 값을 추가했다.
 ```
