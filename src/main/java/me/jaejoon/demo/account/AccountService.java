@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import me.jaejoon.demo.domain.Account;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 public class AccountService {
     private final AccountRepository repository;
     private final JavaMailSender mailSender;
+    private final PasswordEncoder passwordEncoder;
 
     private void sendSignUpConfirmEmail(Account newAccount) {
         SimpleMailMessage mailMessage = new SimpleMailMessage();
@@ -25,7 +27,7 @@ public class AccountService {
     private Account saveNewAccount(SignUpForm signUpForm) {
         Account account = Account.builder()
                 .nickname(signUpForm.getNickname())
-                .password(signUpForm.getPassword())
+                .password(passwordEncoder.encode(signUpForm.getPassword()))
                 .email(signUpForm.getEmail())
                 .studyCreatedByWeb(true)
                 .studyEnrollmentResultByWeb(true)
