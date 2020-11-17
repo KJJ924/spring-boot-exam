@@ -23,7 +23,7 @@ public class AccountController {
 
     private final SignUpFormValidation signUpFormValidation;
     private final AccountService service;
-
+    private final AccountRepository repository;
 
     @InitBinder("signUpForm")
     public void initBinder(WebDataBinder webDataBinder){
@@ -43,6 +43,25 @@ public class AccountController {
         }
         service.processNewAccount(signUpForm);
         return "redirect:/";
+    }
+
+    @GetMapping("/check-email-token")
+    public String checkEmailToken(String token ,String email, Model model){
+        Account account = repository.findByEmail(email);
+        String view = "account/checked-email";
+        if(account ==null){
+            model.addAttribute("error","not.account");
+            return view;
+        }
+        if(!token.equals(account.getEmailCheckToken())){
+            model.addAttribute("error","wrong.token");
+            return view;
+        }
+        account.setEmailVerified(true);
+        account.setJoinedAt(LocalDateTime.now());
+        model.addAttribute("numberOfUser",repository.count());
+        model.addAttribute("nickName",account.getNickname());
+        return view;
     }
 
 

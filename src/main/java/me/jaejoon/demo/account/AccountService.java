@@ -6,6 +6,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -16,7 +17,7 @@ public class AccountService {
     private final JavaMailSender mailSender;
     private final PasswordEncoder passwordEncoder;
 
-    private void sendSignUpConfirmEmail(Account newAccount) {
+    void sendSignUpConfirmEmail(Account newAccount) {
         SimpleMailMessage mailMessage = new SimpleMailMessage();
         mailMessage.setSubject("회원가입 인증메일");
         mailMessage.setText("/check-email-token?token="+ newAccount.getEmailCheckToken()
@@ -37,6 +38,7 @@ public class AccountService {
         return repository.save(account);
     }
 
+    @Transactional
     public void processNewAccount(SignUpForm signUpForm) {
         Account newAccount = saveNewAccount(signUpForm);
         newAccount.generateEmailCheckToken();

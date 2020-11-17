@@ -1,4 +1,4 @@
-package me.jaejoon.demo;
+package me.jaejoon.demo.mail;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.MailException;
