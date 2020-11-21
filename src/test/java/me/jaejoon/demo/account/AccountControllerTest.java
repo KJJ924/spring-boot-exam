@@ -11,6 +11,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -21,6 +22,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@Transactional
 @SpringBootTest
 @AutoConfigureMockMvc
 class AccountControllerTest {
@@ -33,6 +35,39 @@ class AccountControllerTest {
 
     @MockBean
     JavaMailSender mailSender;
+
+    @Test
+    @DisplayName("이메일 체크 오류")
+    void email_check_wrong() throws Exception {
+        mockMvc.perform(get("/check-email-token")
+                .param("token","asdadadad")
+                .param("email","test@email.com"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("error"))
+                .andExpect(view().name("account/checked-email"));
+    }
+    @Test
+    @DisplayName("이메일 체크 성공")
+    void email_check_complete() throws Exception {
+        Account account = Account.builder()
+                .email("test@email.com")
+                .nickname("kjj")
+                .password("asd")
+                .build();
+        repository.save(account);
+        account.generateEmailCheckToken();
+
+        mockMvc.perform(get("/check-email-token")
+                .param("token",account.getEmailCheckToken())
+                .param("email",account.getEmail()))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeDoesNotExist("error"))
+                .andExpect(model().attributeExists("nickName"))
+                .andExpect(model().attributeExists("numberOfUser"))
+                .andExpect(view().name("account/checked-email"));
+
+    }
+
     @Test
     @DisplayName("회원가입페이지")
     void signUpForm() throws Exception {

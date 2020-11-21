@@ -57,8 +57,7 @@ public class AccountController {
             model.addAttribute("error","wrong.token");
             return view;
         }
-        account.setEmailVerified(true);
-        account.setJoinedAt(LocalDateTime.now());
+        account.completeCheck();
         model.addAttribute("numberOfUser",repository.count());
         model.addAttribute("nickName",account.getNickname());
         return view;
