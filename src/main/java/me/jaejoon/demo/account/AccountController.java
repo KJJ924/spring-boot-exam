@@ -65,5 +65,21 @@ public class AccountController {
         return view;
     }
 
+    @GetMapping("/check-email")
+    public String checkEmail(@CurrentUser Account account , Model model){
+        model.addAttribute(account);
+        return "account/check-email";
+    }
+
+    @GetMapping("/resend-email")
+    public String reSendEmail(@CurrentUser Account account,Model model){
+        if (!account.canSendConfirmEmail()){
+            model.addAttribute("error","1시간 이내에 이메일을 재전송 할 수 없습니다");
+            model.addAttribute("email",account.getEmail());
+            return "account/check-email";
+        }
+        service.sendSignUpConfirmEmail(account);
+        return "redirect:/";
+    }
 
 }

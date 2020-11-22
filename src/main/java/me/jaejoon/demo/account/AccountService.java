@@ -21,7 +21,7 @@ public class AccountService {
     private final JavaMailSender mailSender;
     private final PasswordEncoder passwordEncoder;
 
-    void sendSignUpConfirmEmail(Account newAccount) {
+    public void sendSignUpConfirmEmail(Account newAccount) {
         SimpleMailMessage mailMessage = new SimpleMailMessage();
         mailMessage.setSubject("회원가입 인증메일");
         mailMessage.setText("/check-email-token?token="+ newAccount.getEmailCheckToken()
