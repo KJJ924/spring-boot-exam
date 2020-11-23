@@ -19,6 +19,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class AccountService implements UserDetailsService {
     private final AccountRepository repository;
     private final JavaMailSender mailSender;
@@ -45,7 +46,6 @@ public class AccountService implements UserDetailsService {
         return repository.save(account);
     }
 
-    @Transactional
     public Account processNewAccount(SignUpForm signUpForm) {
         Account account = saveNewAccount(signUpForm);
         account.generateEmailCheckToken();
@@ -63,6 +63,7 @@ public class AccountService implements UserDetailsService {
         SecurityContextHolder.getContext().setAuthentication(token);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public UserDetails loadUserByUsername(String nickNameOrEmail) throws UsernameNotFoundException {
         Account account = repository.findByNickname(nickNameOrEmail);
@@ -73,5 +74,10 @@ public class AccountService implements UserDetailsService {
             throw  new UsernameNotFoundException(nickNameOrEmail);
         }
         return new UserAccount(account);
+    }
+
+    public void completeCheck(Account account) {
+        account.completeCheck();
+        login(account);
     }
 }

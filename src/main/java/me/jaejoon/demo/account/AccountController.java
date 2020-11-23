@@ -6,10 +6,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
@@ -54,8 +51,7 @@ public class AccountController {
             model.addAttribute("error","wrong.token");
             return view;
         }
-        account.completeCheck();
-        service.login(account);
+        service.completeCheck(account);
         model.addAttribute("numberOfUser",repository.count());
         model.addAttribute("nickName",account.getNickname());
         return view;
@@ -76,5 +72,19 @@ public class AccountController {
         }
         service.sendSignUpConfirmEmail(account);
         return "redirect:/";
+    }
+
+    @GetMapping("/profile/{nickname}")
+    public String viewProfile(@PathVariable String nickname , Model model ,@CurrentUser Account account){
+        Account byNickname = repository.findByNickname(nickname);
+        if (byNickname == null){
+            throw new IllegalArgumentException(nickname+"에 해당하는 계정이 존재하지 않습니다. ");
+        }
+        // account 로 모델에 담김
+        model.addAttribute(byNickname);
+        // 내가 생각한건 if 문으로 구분하여 값을 셋팅 할려고 생각했는데 아래 방법이 있었음.
+        model.addAttribute("isOwner",byNickname.equals(account));
+
+        return "account/profile";
     }
 }
