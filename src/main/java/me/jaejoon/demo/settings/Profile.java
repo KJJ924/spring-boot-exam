@@ -1,10 +1,12 @@
 package me.jaejoon.demo.settings;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import me.jaejoon.demo.domain.Account;
 
 @Data
-public class profile {
+@NoArgsConstructor
+public class Profile {
 
     private String bio;
 
@@ -14,7 +16,8 @@ public class profile {
 
     private String location;
 
-    public profile(Account account) {
+
+    public Profile(Account account) {
         this.bio = account.getBio();
         this.url = account.getUrl();
         this.occupation = account.getOccupation();

@@ -2,6 +2,7 @@ package me.jaejoon.demo.account;
 
 import lombok.RequiredArgsConstructor;
 import me.jaejoon.demo.domain.Account;
+import me.jaejoon.demo.settings.Profile;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -79,5 +80,13 @@ public class AccountService implements UserDetailsService {
     public void completeCheck(Account account) {
         account.completeCheck();
         login(account);
+    }
+
+    public void updateProfile(Account account, Profile profile) {
+        account.setBio(profile.getBio());
+        account.setUrl(profile.getUrl());
+        account.setLocation(profile.getLocation());
+        account.setOccupation(profile.getOccupation());
+        repository.save(account);
     }
 }
