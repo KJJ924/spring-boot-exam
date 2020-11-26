@@ -1,6 +1,7 @@
 package me.jaejoon.demo.settings;
 
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import me.jaejoon.demo.domain.Account;
 import org.hibernate.validator.constraints.Length;
