@@ -4,7 +4,7 @@ JPA 기반 웹 애플리케이션 강좌 개발 정리 및 소스코드
 강의를 들으면서 이해한 내용을 개인적 견해로 이해하여 정리합니다.
 내용적 오류가 존재할수 있습니다.
 
-## 2020-11-15 -1일차
+
 ### * 롬복 사용시 주의사항
 1. Immutable(불변) 클래스를 제외하고는 아무 파라미터 없는 @EqualsAndHashCode 사용은 금지한다.
 2. 일반적으로 비교에서 사용하지 않는 Data 성 객체는 equals & hashCode를 따로 구현하지 않는게 차라리 낫다.
@@ -34,7 +34,7 @@ id 는 DB의 Key 값이기 때문에
   - void validate(Object target, Errors error) : 실제 검증 로직이 이루어지는 메서드
     - > 참고 Link https://engkimbs.tistory.com/728
 
-## 2020-11-16 -2일차
+
 #### 객체지향 설계 느낀점.(묻지말고 객체에게 시켜라)
 - account 객체의 emailCheckToken 필드에 값을 set 할때 평소에는 클래스에 setter를 만들고 setter를 이용하여 값을 추가했다.
 ```
