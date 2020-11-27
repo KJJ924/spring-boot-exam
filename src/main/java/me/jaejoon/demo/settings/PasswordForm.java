@@ -1,4 +1,4 @@
-package me.jaejoon.demo.account;
+package me.jaejoon.demo.settings;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

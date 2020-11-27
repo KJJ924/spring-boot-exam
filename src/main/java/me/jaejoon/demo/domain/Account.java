@@ -41,15 +41,15 @@ public class Account {
 
     private boolean studyCreatedByEmail;
 
-    private boolean studyCreatedByWeb;
+    private boolean studyCreatedByWeb = true;
 
     private boolean studyEnrollmentResultByEmail;
 
-    private boolean studyEnrollmentResultByWeb;
+    private boolean studyEnrollmentResultByWeb = true;
 
     private boolean studyUpdateByEmail;
 
-    private boolean studyUpdateByWeb;
+    private boolean studyUpdateByWeb = true;
     private LocalDateTime emailCheckTokenGeneratedAt;
     public void generateEmailCheckToken() {
         this.emailCheckToken = UUID.randomUUID().toString();

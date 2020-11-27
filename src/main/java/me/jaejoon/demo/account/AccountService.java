@@ -2,6 +2,8 @@ package me.jaejoon.demo.account;
 
 import lombok.RequiredArgsConstructor;
 import me.jaejoon.demo.domain.Account;
+import me.jaejoon.demo.settings.Notifications;
+import me.jaejoon.demo.settings.PasswordForm;
 import me.jaejoon.demo.settings.Profile;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -93,6 +95,16 @@ public class AccountService implements UserDetailsService {
 
     public void updatePassword(Account account, PasswordForm form) {
         account.setPassword(passwordEncoder.encode(form.getNewPasswordConfirm()));
+        repository.save(account);
+    }
+
+    public void updateNotifications(Account account, Notifications notifications) {
+        account.setStudyCreatedByWeb(notifications.isStudyCreatedByWeb());
+        account.setStudyCreatedByEmail(notifications.isStudyCreatedByEmail());
+        account.setStudyUpdateByWeb(notifications.isStudyUpdatedByWeb());
+        account.setStudyUpdateByEmail(notifications.isStudyUpdatedByEmail());
+        account.setStudyEnrollmentResultByEmail(notifications.isStudyEnrollmentResultByEmail());
+        account.setStudyEnrollmentResultByWeb(notifications.isStudyEnrollmentResultByWeb());
         repository.save(account);
     }
 }

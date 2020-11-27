@@ -1,4 +1,4 @@
-package me.jaejoon.demo.account;
+package me.jaejoon.demo.settings;
 
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
