@@ -33,14 +33,15 @@ public class SettingController {
     public void initBinder(WebDataBinder webDataBinder){
         webDataBinder.addValidators(new PasswordValidation());
     }
+
     @GetMapping(SETTINGS_PASSWORD_URL)
     public String passwordUpdateForm(Model model){
         model.addAttribute(new PasswordForm());
         return SETTINGS_PASSWORD_VIEW_NAME;
     }
     @PostMapping(SETTINGS_PASSWORD_URL)
-    public String passwordUpdate(@CurrentUser Account account, Model model
-            ,@Valid @ModelAttribute PasswordForm form ,Errors errors, RedirectAttributes attributes){
+    public String passwordUpdate(@CurrentUser Account account,@Valid PasswordForm form ,Errors errors
+            ,RedirectAttributes attributes){
         if(errors.hasErrors()){
             return SETTINGS_PASSWORD_URL;
         }
