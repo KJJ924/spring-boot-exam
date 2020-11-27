@@ -5,6 +5,7 @@ import me.jaejoon.demo.domain.Account;
 import me.jaejoon.demo.settings.Notifications;
 import me.jaejoon.demo.settings.PasswordForm;
 import me.jaejoon.demo.settings.Profile;
+import org.modelmapper.ModelMapper;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,6 +28,7 @@ public class AccountService implements UserDetailsService {
     private final AccountRepository repository;
     private final JavaMailSender mailSender;
     private final PasswordEncoder passwordEncoder;
+    private final ModelMapper modelMapper;
 
     public void sendSignUpConfirmEmail(Account newAccount) {
         SimpleMailMessage mailMessage = new SimpleMailMessage();
@@ -85,11 +87,7 @@ public class AccountService implements UserDetailsService {
     }
 
     public void updateProfile(Account account, Profile profile) {
-        account.setBio(profile.getBio());
-        account.setUrl(profile.getUrl());
-        account.setLocation(profile.getLocation());
-        account.setOccupation(profile.getOccupation());
-        account.setProfileImage(profile.getProfileImage());
+        modelMapper.map(profile,account);
         repository.save(account);
     }
 
@@ -99,12 +97,7 @@ public class AccountService implements UserDetailsService {
     }
 
     public void updateNotifications(Account account, Notifications notifications) {
-        account.setStudyCreatedByWeb(notifications.isStudyCreatedByWeb());
-        account.setStudyCreatedByEmail(notifications.isStudyCreatedByEmail());
-        account.setStudyUpdateByWeb(notifications.isStudyUpdatedByWeb());
-        account.setStudyUpdateByEmail(notifications.isStudyUpdatedByEmail());
-        account.setStudyEnrollmentResultByEmail(notifications.isStudyEnrollmentResultByEmail());
-        account.setStudyEnrollmentResultByWeb(notifications.isStudyEnrollmentResultByWeb());
+        modelMapper.map(notifications,account);
         repository.save(account);
     }
 }
