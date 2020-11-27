@@ -2,10 +2,7 @@ package me.jaejoon.demo.account;
 
 import lombok.RequiredArgsConstructor;
 import me.jaejoon.demo.domain.Account;
-import me.jaejoon.demo.form.SignUpForm;
-import me.jaejoon.demo.form.Notifications;
-import me.jaejoon.demo.form.PasswordForm;
-import me.jaejoon.demo.form.Profile;
+import me.jaejoon.demo.form.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -100,5 +97,11 @@ public class AccountService implements UserDetailsService {
     public void updateNotifications(Account account, Notifications notifications) {
         modelMapper.map(notifications,account);
         repository.save(account);
+    }
+
+    public void updateNickName(Account account, NicknameForm nicknameForm) {
+        modelMapper.map(nicknameForm,account);
+        repository.save(account);
+        login(account);
     }
 }

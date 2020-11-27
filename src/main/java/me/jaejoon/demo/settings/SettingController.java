@@ -6,9 +6,11 @@ import me.jaejoon.demo.account.AccountService;
 import me.jaejoon.demo.account.CurrentUser;
 import me.jaejoon.demo.domain.Account;
 
+import me.jaejoon.demo.form.NicknameForm;
 import me.jaejoon.demo.form.Notifications;
 import me.jaejoon.demo.form.PasswordForm;
 import me.jaejoon.demo.form.Profile;
+import me.jaejoon.demo.validation.NicknameFormValidation;
 import me.jaejoon.demo.validation.PasswordValidation;
 import org.modelmapper.ModelMapper;
 
@@ -36,12 +38,42 @@ public class SettingController {
     static final String SETTINGS_NOTIFICATION_VIEW_NAME = "/settings/notifications";
     static final String SETTINGS_NOTIFICATION_URL= "/settings/notifications";
 
+    static final String SETTINGS_ACCOUNT_VIEW_NAME = "/settings/account";
+    static final String SETTINGS_ACCOUNT_URL= "/settings/account";
+
+
     private final AccountService service;
     private final ModelMapper modelMapper;
+    private final NicknameFormValidation nicknameFormValidation;
 
     @InitBinder("passwordForm")
     public void initBinder(WebDataBinder webDataBinder){
         webDataBinder.addValidators(new PasswordValidation());
+    }
+
+    @InitBinder("nicknameForm")
+    public void initBinder2(WebDataBinder webDataBinder){
+        webDataBinder.addValidators(nicknameFormValidation);
+    }
+
+    @GetMapping(SETTINGS_ACCOUNT_URL)
+    public String accountUpdateForm(@CurrentUser Account account , Model model){
+        model.addAttribute(account);
+        model.addAttribute(modelMapper.map(account, NicknameForm.class));
+
+        return SETTINGS_ACCOUNT_VIEW_NAME;
+    }
+
+    @PostMapping(SETTINGS_ACCOUNT_URL)
+    public String accountUpdate(@CurrentUser Account account ,@Valid NicknameForm nicknameForm ,Errors errors
+            ,Model model ,RedirectAttributes attributes ){
+        if(errors.hasErrors()){
+            model.addAttribute(account);
+            return SETTINGS_ACCOUNT_VIEW_NAME;
+        }
+        attributes.addFlashAttribute("message","변경 되었습니다");
+        service.updateNickName(account,nicknameForm);
+        return "redirect:"+SETTINGS_ACCOUNT_VIEW_NAME;
     }
 
     @GetMapping(SETTINGS_NOTIFICATION_URL)
