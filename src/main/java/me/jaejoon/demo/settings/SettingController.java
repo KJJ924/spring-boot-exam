@@ -6,6 +6,10 @@ import me.jaejoon.demo.account.AccountService;
 import me.jaejoon.demo.account.CurrentUser;
 import me.jaejoon.demo.domain.Account;
 
+import me.jaejoon.demo.form.Notifications;
+import me.jaejoon.demo.form.PasswordForm;
+import me.jaejoon.demo.form.Profile;
+import me.jaejoon.demo.validation.PasswordValidation;
 import org.modelmapper.ModelMapper;
 
 import org.springframework.stereotype.Controller;
@@ -43,7 +47,7 @@ public class SettingController {
     @GetMapping(SETTINGS_NOTIFICATION_URL)
     public String notificationsUpdateForm(@CurrentUser Account account , Model model){
         model.addAttribute(account);
-        model.addAttribute(modelMapper.map(account,Notifications.class));
+        model.addAttribute(modelMapper.map(account, Notifications.class));
         return SETTINGS_NOTIFICATION_VIEW_NAME;
     }
 
@@ -77,7 +81,7 @@ public class SettingController {
     @GetMapping(SETTINGS_PROFILE_URL)
     public String profileUpdateForm(@CurrentUser Account account , Model model){
         model.addAttribute(account);
-        model.addAttribute(modelMapper.map(account,Profile.class));
+        model.addAttribute(modelMapper.map(account, Profile.class));
         return SETTINGS_PROFILE_VIEW_NAME;
     }
 

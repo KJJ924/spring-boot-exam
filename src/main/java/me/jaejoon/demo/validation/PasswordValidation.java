@@ -1,5 +1,6 @@
-package me.jaejoon.demo.settings;
+package me.jaejoon.demo.validation;
 
+import me.jaejoon.demo.form.PasswordForm;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 

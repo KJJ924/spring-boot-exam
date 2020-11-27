@@ -1,4 +1,4 @@
-package me.jaejoon.demo.settings;
+package me.jaejoon.demo.form;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

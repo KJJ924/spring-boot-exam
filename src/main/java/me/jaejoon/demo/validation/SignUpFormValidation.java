@@ -1,6 +1,8 @@
-package me.jaejoon.demo.account;
+package me.jaejoon.demo.validation;
 
 import lombok.RequiredArgsConstructor;
+import me.jaejoon.demo.account.AccountRepository;
+import me.jaejoon.demo.form.SignUpForm;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;

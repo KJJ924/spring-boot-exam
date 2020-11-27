@@ -2,7 +2,7 @@ package me.jaejoon.demo.Main;
 
 import me.jaejoon.demo.account.AccountRepository;
 import me.jaejoon.demo.account.AccountService;
-import me.jaejoon.demo.account.SignUpForm;
+import me.jaejoon.demo.form.SignUpForm;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

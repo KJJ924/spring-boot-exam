@@ -2,6 +2,8 @@ package me.jaejoon.demo.account;
 
 import lombok.RequiredArgsConstructor;
 import me.jaejoon.demo.domain.Account;
+import me.jaejoon.demo.form.SignUpForm;
+import me.jaejoon.demo.validation.SignUpFormValidation;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;

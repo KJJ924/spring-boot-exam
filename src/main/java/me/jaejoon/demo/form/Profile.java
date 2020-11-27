@@ -1,4 +1,4 @@
-package me.jaejoon.demo.settings;
+package me.jaejoon.demo.form;
 
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;

@@ -2,7 +2,7 @@ package me.jaejoon.demo;
 
 import lombok.RequiredArgsConstructor;
 import me.jaejoon.demo.account.AccountService;
-import me.jaejoon.demo.account.SignUpForm;
+import me.jaejoon.demo.form.SignUpForm;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;

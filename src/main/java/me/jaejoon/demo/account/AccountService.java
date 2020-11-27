@@ -2,9 +2,10 @@ package me.jaejoon.demo.account;
 
 import lombok.RequiredArgsConstructor;
 import me.jaejoon.demo.domain.Account;
-import me.jaejoon.demo.settings.Notifications;
-import me.jaejoon.demo.settings.PasswordForm;
-import me.jaejoon.demo.settings.Profile;
+import me.jaejoon.demo.form.SignUpForm;
+import me.jaejoon.demo.form.Notifications;
+import me.jaejoon.demo.form.PasswordForm;
+import me.jaejoon.demo.form.Profile;
 import org.modelmapper.ModelMapper;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
