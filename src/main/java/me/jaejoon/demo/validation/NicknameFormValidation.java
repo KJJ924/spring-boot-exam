@@ -1,6 +1,5 @@
 package me.jaejoon.demo.validation;
 
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import me.jaejoon.demo.account.AccountRepository;
 import me.jaejoon.demo.form.NicknameForm;
@@ -24,8 +23,7 @@ public class NicknameFormValidation implements Validator {
        NicknameForm nicknameForm = (NicknameForm) target;
         boolean result = accountRepository.existsByNickname(nicknameForm.getNickname());
         if(result){
-           errors.rejectValue("nickname","nickname.duplicate"
-                   ,"이미 존재하는 닉네임입니다.");
+           errors.rejectValue("nickname","nickname.duplicate","이미 존재하는 닉네임입니다.");
        }
     }
 }

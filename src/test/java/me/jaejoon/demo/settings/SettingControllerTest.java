@@ -4,6 +4,7 @@ import me.jaejoon.demo.WithAccount;
 import me.jaejoon.demo.account.AccountRepository;
 import me.jaejoon.demo.account.AccountService;
 import me.jaejoon.demo.domain.Account;
+import me.jaejoon.demo.form.SignUpForm;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -125,4 +126,53 @@ class SettingControllerTest {
                 .andExpect(view().name(SettingController.SETTINGS_PASSWORD_VIEW_NAME))
                 .andExpect(model().hasErrors());
     }
+
+    @Test
+    @WithAccount("jaejoon")
+    @DisplayName("닉네임 변경 수정 페이지 이동")
+    void updateNickNameForm() throws Exception {
+        mockMvc.perform(get(SettingController.SETTINGS_ACCOUNT_URL))
+                .andExpect(status().isOk())
+                .andExpect(view().name(SettingController.SETTINGS_ACCOUNT_VIEW_NAME))
+                .andExpect(model().attributeExists("account"))
+                .andExpect(model().attributeExists("nicknameForm"));
+    }
+    @Test
+    @WithAccount("jaejoon")
+    @DisplayName("닉네임 변경_중복실패")
+    void updateNickName_fail() throws Exception {
+        SignUpForm signUpForm = new SignUpForm();
+        signUpForm.setNickname("중복닉네임");
+        signUpForm.setEmail("test@gmail.com");
+        signUpForm.setPassword("123123131313");
+        service.processNewAccount(signUpForm);
+
+        mockMvc.perform(post(SettingController.SETTINGS_ACCOUNT_URL)
+                .param("nickname","중복닉네임")
+                .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(view().name(SettingController.SETTINGS_ACCOUNT_VIEW_NAME))
+                .andExpect(model().hasErrors());
+
+        boolean beforeName = repository.existsByNickname("jaejoon");
+        assertThat(beforeName).isTrue();
+    }
+
+    @Test
+    @WithAccount("jaejoon")
+    @DisplayName("닉네임 변경_성공")
+    void updateNickName() throws Exception {
+        mockMvc.perform(post(SettingController.SETTINGS_ACCOUNT_URL)
+                .param("nickname","변경닉네임")
+                .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl(SettingController.SETTINGS_ACCOUNT_URL))
+                .andExpect(flash().attributeExists("message"));
+        boolean beforeName = repository.existsByNickname("jaejoon");
+        boolean afterName = repository.existsByNickname("변경닉네임");
+
+        assertThat(beforeName).isFalse();
+        assertThat(afterName).isTrue();
+    }
+
 }
