@@ -29,6 +29,7 @@ public class AccountService implements UserDetailsService {
     private final ModelMapper modelMapper;
 
     public void sendSignUpConfirmEmail(Account newAccount) {
+        newAccount.generateEmailCheckToken();
         SimpleMailMessage mailMessage = new SimpleMailMessage();
         mailMessage.setSubject("회원가입 인증메일");
         mailMessage.setText("/check-email-token?token="+ newAccount.getEmailCheckToken()
@@ -103,5 +104,15 @@ public class AccountService implements UserDetailsService {
         modelMapper.map(nicknameForm,account);
         repository.save(account);
         login(account);
+    }
+
+    public void sendLoginLink(Account account) {
+        account.generateEmailCheckToken();
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(account.getEmail());
+        message.setSubject("로그인 메일");
+        message.setText("/login-by-email?token=" + account.getEmailCheckToken() +
+                "&email=" + account.getEmail());
+        mailSender.send(message);
     }
 }
