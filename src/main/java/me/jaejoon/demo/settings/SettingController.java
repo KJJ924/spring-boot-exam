@@ -1,5 +1,7 @@
 package me.jaejoon.demo.settings;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 
 import me.jaejoon.demo.account.AccountService;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -47,6 +50,7 @@ public class SettingController {
     private final ModelMapper modelMapper;
     private final NicknameFormValidation nicknameFormValidation;
     private final TagRepository tagRepository;
+    private final ObjectMapper objectMapper;
 
     @InitBinder("passwordForm")
     public void initBinder(WebDataBinder webDataBinder){
@@ -59,10 +63,13 @@ public class SettingController {
     }
 
     @GetMapping(SETTINGS_TAGS_URL)
-    public String tagsUpdateForm(@CurrentUser Account account, Model model){
+    public String tagsUpdateForm(@CurrentUser Account account, Model model) throws JsonProcessingException {
         Set<Tag> tags = service.getTags(account);
         model.addAttribute(account);
         model.addAttribute("tags",tags.stream().map(Tag::getTitle).collect(Collectors.toList()));
+
+        List<String> collect = tagRepository.findAll().stream().map(Tag::getTitle).collect(Collectors.toList());
+        model.addAttribute("whiteList",objectMapper.writeValueAsString(collect));
         return SETTINGS_TAGS_VIEW_NAME;
     }
 
