@@ -78,6 +78,18 @@ public class SettingController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping(SETTINGS_TAGS_URL+"/remove")
+    @ResponseBody
+    public ResponseEntity tageRemove(@CurrentUser Account account , @RequestBody TagForm tagForm){
+        String title = tagForm.getTagTitle();
+        Tag byTitle = tagRepository.findByTitle(title);
+        if(byTitle == null){
+            return ResponseEntity.badRequest().build();
+        }
+        service.removeTag(account,byTitle);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping(SETTINGS_ACCOUNT_URL)
     public String accountUpdateForm(@CurrentUser Account account , Model model){
         model.addAttribute(account);
