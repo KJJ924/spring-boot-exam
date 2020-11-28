@@ -17,7 +17,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -26,7 +25,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 @Transactional
 public class AccountService implements UserDetailsService {
-    private final AccountRepository repository;
+    private final AccountRepository accountRepository;
     private final JavaMailSender mailSender;
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
@@ -41,16 +40,9 @@ public class AccountService implements UserDetailsService {
     }
 
     private Account saveNewAccount(SignUpForm signUpForm) {
-        Account account = Account.builder()
-                .nickname(signUpForm.getNickname())
-                .password(passwordEncoder.encode(signUpForm.getPassword()))
-                .email(signUpForm.getEmail())
-                .studyCreatedByWeb(true)
-                .studyEnrollmentResultByWeb(true)
-                .studyUpdateByWeb(true)
-                .joinedAt(LocalDateTime.now())
-                .build();
-        return repository.save(account);
+        signUpForm.setPassword(passwordEncoder.encode(signUpForm.getPassword()));
+        Account account = modelMapper.map(signUpForm, Account.class);
+        return accountRepository.save(account);
     }
 
     public Account processNewAccount(SignUpForm signUpForm) {
@@ -73,9 +65,9 @@ public class AccountService implements UserDetailsService {
     @Transactional(readOnly = true)
     @Override
     public UserDetails loadUserByUsername(String nickNameOrEmail) throws UsernameNotFoundException {
-        Account account = repository.findByNickname(nickNameOrEmail);
+        Account account = accountRepository.findByNickname(nickNameOrEmail);
         if (account == null){
-            account = repository.findByEmail(nickNameOrEmail);
+            account = accountRepository.findByEmail(nickNameOrEmail);
         }
         if (account == null){
             throw  new UsernameNotFoundException(nickNameOrEmail);
@@ -90,22 +82,22 @@ public class AccountService implements UserDetailsService {
 
     public void updateProfile(Account account, Profile profile) {
         modelMapper.map(profile,account);
-        repository.save(account);
+        accountRepository.save(account);
     }
 
     public void updatePassword(Account account, PasswordForm form) {
         account.setPassword(passwordEncoder.encode(form.getNewPasswordConfirm()));
-        repository.save(account);
+        accountRepository.save(account);
     }
 
     public void updateNotifications(Account account, Notifications notifications) {
         modelMapper.map(notifications,account);
-        repository.save(account);
+        accountRepository.save(account);
     }
 
     public void updateNickName(Account account, NicknameForm nicknameForm) {
         modelMapper.map(nicknameForm,account);
-        repository.save(account);
+        accountRepository.save(account);
         login(account);
     }
 
@@ -120,17 +112,17 @@ public class AccountService implements UserDetailsService {
     }
 
     public void addTag(Account account, Tag tag) {
-        Optional<Account> byId = repository.findById(account.getId());
+        Optional<Account> byId = accountRepository.findById(account.getId());
         byId.ifPresent(a ->a.getTags().add(tag));
     }
 
     public Set<Tag> getTags(Account account) {
-        Optional<Account> byId = repository.findById(account.getId());
+        Optional<Account> byId = accountRepository.findById(account.getId());
         return byId.orElseThrow().getTags();
     }
 
     public void removeTag(Account account, Tag tag) {
-        Optional<Account> byId = repository.findById(account.getId());
+        Optional<Account> byId = accountRepository.findById(account.getId());
         byId.ifPresent(a-> a.getTags().remove(tag));
     }
 }

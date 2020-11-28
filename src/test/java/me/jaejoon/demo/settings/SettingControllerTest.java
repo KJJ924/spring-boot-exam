@@ -1,18 +1,24 @@
 package me.jaejoon.demo.settings;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import me.jaejoon.demo.WithAccount;
 import me.jaejoon.demo.account.AccountRepository;
 import me.jaejoon.demo.account.AccountService;
 import me.jaejoon.demo.domain.Account;
+import me.jaejoon.demo.domain.Tag;
 import me.jaejoon.demo.form.SignUpForm;
+import me.jaejoon.demo.form.TagForm;
+import me.jaejoon.demo.tag.TagRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -21,24 +27,87 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 class SettingControllerTest {
 
     @Autowired
     MockMvc mockMvc;
 
     @Autowired
-    AccountService service;
+    AccountService accountService;
 
     @Autowired
-    AccountRepository repository;
+    AccountRepository accountRepository;
 
     @Autowired
     PasswordEncoder passwordEncoder;
 
+    @Autowired
+    ObjectMapper objectMapper;
+
+    @Autowired
+    TagRepository tagRepository;
+
     @AfterEach
     void afterEach(){
-        repository.deleteAll();
+        accountRepository.deleteAll();
+        tagRepository.deleteAll();
     }
+
+    @Test
+    @WithAccount("jaejoon")
+    @DisplayName("태그 수정 폼")
+    void tagForm() throws Exception {
+        mockMvc.perform(get(SettingController.SETTINGS_TAGS_URL))
+                .andExpect(status().isOk())
+                .andExpect(view().name(SettingController.SETTINGS_TAGS_VIEW_NAME))
+                .andExpect(model().attributeExists("account"))
+                .andExpect(model().attributeExists("tags"))
+                .andExpect(model().attributeExists("whiteList"));
+
+    }
+    @Test
+    @WithAccount("jaejoon")
+    @DisplayName("태그 추가")
+    void addTag() throws Exception {
+
+        TagForm tagForm = new TagForm();
+        tagForm.setTagTitle("newTag");
+
+        mockMvc.perform(post(SettingController.SETTINGS_TAGS_URL+"/add")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(tagForm))
+                .with(csrf()))
+                .andExpect(status().isOk());
+
+        Tag newTag = tagRepository.findByTitle("newTag");
+        assertThat(newTag).isNotNull();
+
+        Account account = accountRepository.findByNickname("jaejoon");
+        assertThat(account.getTags().contains(newTag)).isTrue();
+    }
+    @Test
+    @WithAccount("jaejoon")
+    @DisplayName("태그 삭제")
+    void removeTag() throws Exception {
+        Account account = accountRepository.findByNickname("jaejoon");
+        Tag newTag = tagRepository.save(Tag.builder().title("newTag").build());
+        accountService.addTag(account,newTag);
+
+        assertThat(account.getTags().contains(newTag)).isTrue();
+
+        TagForm tagForm = new TagForm();
+        tagForm.setTagTitle("newTag");
+
+        mockMvc.perform(post(SettingController.SETTINGS_TAGS_URL+"/remove")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(tagForm))
+                .with(csrf()))
+                .andExpect(status().isOk());
+
+        assertThat(account.getTags().contains(newTag)).isFalse();
+    }
+
     @Test
     @WithAccount("jaejoon")
     @DisplayName("프로필수정_페이지_이동")
@@ -62,7 +131,7 @@ class SettingControllerTest {
                 .andExpect(redirectedUrl(SettingController.SETTINGS_PROFILE_URL))
                 .andExpect(flash().attributeExists("message"));
 
-        Account account = repository.findByNickname("jaejoon");
+        Account account = accountRepository.findByNickname("jaejoon");
         assertThat(account.getBio()).isEqualTo(bio);
     }
 
@@ -82,7 +151,7 @@ class SettingControllerTest {
                 .andExpect(model().hasErrors());
 
 
-        Account account = repository.findByNickname("jaejoon");
+        Account account = accountRepository.findByNickname("jaejoon");
         assertThat(account.getBio()).isNull();
     }
 
@@ -109,7 +178,7 @@ class SettingControllerTest {
                 .andExpect(redirectedUrl(SettingController.SETTINGS_PASSWORD_URL))
                 .andExpect(flash().attributeExists("message"));
 
-        Account jaejoon = repository.findByNickname("jaejoon");
+        Account jaejoon = accountRepository.findByNickname("jaejoon");
         boolean matches = passwordEncoder.matches("1234567890", jaejoon.getPassword());
         assertThat(matches).isTrue();
     }
@@ -145,7 +214,7 @@ class SettingControllerTest {
         signUpForm.setNickname("중복닉네임");
         signUpForm.setEmail("test@gmail.com");
         signUpForm.setPassword("123123131313");
-        service.processNewAccount(signUpForm);
+        accountService.processNewAccount(signUpForm);
 
         mockMvc.perform(post(SettingController.SETTINGS_ACCOUNT_URL)
                 .param("nickname","중복닉네임")
@@ -154,7 +223,7 @@ class SettingControllerTest {
                 .andExpect(view().name(SettingController.SETTINGS_ACCOUNT_VIEW_NAME))
                 .andExpect(model().hasErrors());
 
-        boolean beforeName = repository.existsByNickname("jaejoon");
+        boolean beforeName = accountRepository.existsByNickname("jaejoon");
         assertThat(beforeName).isTrue();
     }
 
@@ -168,8 +237,8 @@ class SettingControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl(SettingController.SETTINGS_ACCOUNT_URL))
                 .andExpect(flash().attributeExists("message"));
-        boolean beforeName = repository.existsByNickname("jaejoon");
-        boolean afterName = repository.existsByNickname("변경닉네임");
+        boolean beforeName = accountRepository.existsByNickname("jaejoon");
+        boolean afterName = accountRepository.existsByNickname("변경닉네임");
 
         assertThat(beforeName).isFalse();
         assertThat(afterName).isTrue();
