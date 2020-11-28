@@ -6,22 +6,19 @@ import me.jaejoon.demo.account.AccountService;
 import me.jaejoon.demo.account.CurrentUser;
 import me.jaejoon.demo.domain.Account;
 
-import me.jaejoon.demo.form.NicknameForm;
-import me.jaejoon.demo.form.Notifications;
-import me.jaejoon.demo.form.PasswordForm;
-import me.jaejoon.demo.form.Profile;
+import me.jaejoon.demo.domain.Tag;
+import me.jaejoon.demo.form.*;
+import me.jaejoon.demo.tag.TagRepository;
 import me.jaejoon.demo.validation.NicknameFormValidation;
 import me.jaejoon.demo.validation.PasswordValidation;
 import org.modelmapper.ModelMapper;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.validation.Valid;
@@ -41,10 +38,13 @@ public class SettingController {
     static final String SETTINGS_ACCOUNT_VIEW_NAME = "/settings/account";
     static final String SETTINGS_ACCOUNT_URL= "/settings/account";
 
+    static final String SETTINGS_TAGS_VIEW_NAME = "/settings/tags";
+    static final String SETTINGS_TAGS_URL= "/settings/tags";
 
     private final AccountService service;
     private final ModelMapper modelMapper;
     private final NicknameFormValidation nicknameFormValidation;
+    private final TagRepository tagRepository;
 
     @InitBinder("passwordForm")
     public void initBinder(WebDataBinder webDataBinder){
@@ -54,6 +54,24 @@ public class SettingController {
     @InitBinder("nicknameForm")
     public void initBinder2(WebDataBinder webDataBinder){
         webDataBinder.addValidators(nicknameFormValidation);
+    }
+
+    @GetMapping(SETTINGS_TAGS_URL)
+    public String tagsUpdateForm(@CurrentUser Account account, Model model){
+        model.addAttribute(account);
+        return SETTINGS_TAGS_VIEW_NAME;
+    }
+
+    @PostMapping(SETTINGS_TAGS_URL+"/add")
+    @ResponseBody
+    public ResponseEntity tageUpdate(@CurrentUser Account account, @RequestBody TagForm tagForm){
+        String title = tagForm.getTagTitle();
+        Tag tag =  tagRepository.findByTitle(title);
+        if(tag == null){
+            tag = tagRepository.save(Tag.builder().title(title).build());
+        }
+        service.addTag(account, tag);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping(SETTINGS_ACCOUNT_URL)

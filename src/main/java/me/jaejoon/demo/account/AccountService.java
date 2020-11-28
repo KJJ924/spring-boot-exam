@@ -2,6 +2,7 @@ package me.jaejoon.demo.account;
 
 import lombok.RequiredArgsConstructor;
 import me.jaejoon.demo.domain.Account;
+import me.jaejoon.demo.domain.Tag;
 import me.jaejoon.demo.form.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.mail.SimpleMailMessage;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -114,5 +116,10 @@ public class AccountService implements UserDetailsService {
         message.setText("/login-by-email?token=" + account.getEmailCheckToken() +
                 "&email=" + account.getEmail());
         mailSender.send(message);
+    }
+
+    public void addTag(Account account, Tag tag) {
+        Optional<Account> byId = repository.findById(account.getId());
+        byId.ifPresent(a ->a.getTags().add(tag));
     }
 }
