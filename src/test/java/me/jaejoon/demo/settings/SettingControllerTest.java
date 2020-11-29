@@ -20,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import static me.jaejoon.demo.settings.SettingController.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -58,9 +59,9 @@ class SettingControllerTest {
     @WithAccount("jaejoon")
     @DisplayName("태그 수정 폼")
     void tagForm() throws Exception {
-        mockMvc.perform(get(SettingController.SETTINGS_TAGS_URL))
+        mockMvc.perform(get(ROOT+SETTINGS+TAGS))
                 .andExpect(status().isOk())
-                .andExpect(view().name(SettingController.SETTINGS_TAGS_VIEW_NAME))
+                .andExpect(view().name(SETTINGS+TAGS))
                 .andExpect(model().attributeExists("account"))
                 .andExpect(model().attributeExists("tags"))
                 .andExpect(model().attributeExists("whiteList"));
@@ -74,7 +75,7 @@ class SettingControllerTest {
         TagForm tagForm = new TagForm();
         tagForm.setTagTitle("newTag");
 
-        mockMvc.perform(post(SettingController.SETTINGS_TAGS_URL+"/add")
+        mockMvc.perform(post(ROOT+SETTINGS+TAGS +"/add")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(tagForm))
                 .with(csrf()))
@@ -99,7 +100,7 @@ class SettingControllerTest {
         TagForm tagForm = new TagForm();
         tagForm.setTagTitle("newTag");
 
-        mockMvc.perform(post(SettingController.SETTINGS_TAGS_URL+"/remove")
+        mockMvc.perform(post(ROOT+SETTINGS+TAGS +"/remove")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(tagForm))
                 .with(csrf()))
@@ -112,9 +113,9 @@ class SettingControllerTest {
     @WithAccount("jaejoon")
     @DisplayName("프로필수정_페이지_이동")
     void updateForm() throws Exception {
-        mockMvc.perform(get(SettingController.SETTINGS_PROFILE_URL))
+        mockMvc.perform(get(ROOT+SETTINGS+PROFILE))
+                .andExpect(view().name(SETTINGS+PROFILE))
                 .andExpect(status().isOk())
-                .andExpect(view().name(SettingController.SETTINGS_PROFILE_URL))
                 .andExpect(model().attributeExists("account"))
                 .andExpect(model().attributeExists("profile"));
 
@@ -124,11 +125,11 @@ class SettingControllerTest {
     @DisplayName("프로필수정_성공")
     void updateProfile() throws Exception {
         String bio = "안녕하세요 안녕하세요 ";
-        mockMvc.perform(post(SettingController.SETTINGS_PROFILE_URL)
+        mockMvc.perform(post(ROOT+SETTINGS+PROFILE)
                     .param("bio", bio)
                     .with(csrf()))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl(SettingController.SETTINGS_PROFILE_URL))
+                .andExpect(redirectedUrl(PROFILE))
                 .andExpect(flash().attributeExists("message"));
 
         Account account = accountRepository.findByNickname("jaejoon");
@@ -141,11 +142,11 @@ class SettingControllerTest {
     @DisplayName("프로필수정_실패")
     void updateProfile_error() throws Exception {
         String bio = "안녕하세요 안녕하세요 안녕하세요 안녕하세요안녕하세요 안녕하세요안녕하세요 안녕하세요안녕하세요 안녕하세요";
-        mockMvc.perform(post(SettingController.SETTINGS_PROFILE_URL)
+        mockMvc.perform(post(ROOT+SETTINGS+PROFILE)
                 .param("bio", bio)
                 .with(csrf()))
                 .andExpect(status().isOk())
-                .andExpect(view().name(SettingController.SETTINGS_PROFILE_VIEW_NAME))
+                .andExpect(view().name(SETTINGS+PROFILE))
                 .andExpect(model().attributeExists("account"))
                 .andExpect(model().attributeExists("profile"))
                 .andExpect(model().hasErrors());
@@ -159,10 +160,10 @@ class SettingControllerTest {
     @WithAccount("jaejoon") // 기본 비밀번호 12345689
     @DisplayName("패스워드 수정 페이지 이동")
     void updatePasswordForm() throws Exception {
-        mockMvc.perform(get(SettingController.SETTINGS_PASSWORD_URL))
+        mockMvc.perform(get(ROOT+SETTINGS+PASSWORD))
                 .andExpect(model().attributeExists("passwordForm"))
                 .andExpect(status().isOk())
-                .andExpect(view().name(SettingController.SETTINGS_PASSWORD_VIEW_NAME));
+                .andExpect(view().name(SETTINGS+PASSWORD));
 
     }
 
@@ -170,12 +171,12 @@ class SettingControllerTest {
     @WithAccount("jaejoon")
     @DisplayName("패스워드 변경 성공")
     void updatePassword_success() throws Exception {
-        mockMvc.perform(post(SettingController.SETTINGS_PASSWORD_URL)
+        mockMvc.perform(post(ROOT+SETTINGS+PASSWORD)
                 .param("newPassword","1234567890")
                 .param("newPasswordConfirm","1234567890")
                 .with(csrf()))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl(SettingController.SETTINGS_PASSWORD_URL))
+                .andExpect(redirectedUrl(SETTINGS+PASSWORD))
                 .andExpect(flash().attributeExists("message"));
 
         Account jaejoon = accountRepository.findByNickname("jaejoon");
@@ -187,12 +188,12 @@ class SettingControllerTest {
     @WithAccount("jaejoon")
     @DisplayName("패스워드 변경 실패")
     void updatePassword_wrong() throws Exception {
-        mockMvc.perform(post(SettingController.SETTINGS_PASSWORD_URL)
+        mockMvc.perform(post(ROOT+SETTINGS+PASSWORD)
                 .param("newPassword","12323231490")
                 .param("newPasswordConfirm","1234567890")
                 .with(csrf()))
                 .andExpect(status().isOk())
-                .andExpect(view().name(SettingController.SETTINGS_PASSWORD_VIEW_NAME))
+                .andExpect(view().name(SETTINGS+PASSWORD))
                 .andExpect(model().hasErrors());
     }
 
@@ -200,9 +201,9 @@ class SettingControllerTest {
     @WithAccount("jaejoon")
     @DisplayName("닉네임 변경 수정 페이지 이동")
     void updateNickNameForm() throws Exception {
-        mockMvc.perform(get(SettingController.SETTINGS_ACCOUNT_URL))
+        mockMvc.perform(get(ROOT+SETTINGS+ACCOUNT))
                 .andExpect(status().isOk())
-                .andExpect(view().name(SettingController.SETTINGS_ACCOUNT_VIEW_NAME))
+                .andExpect(view().name(SETTINGS+ACCOUNT))
                 .andExpect(model().attributeExists("account"))
                 .andExpect(model().attributeExists("nicknameForm"));
     }
@@ -216,11 +217,11 @@ class SettingControllerTest {
         signUpForm.setPassword("123123131313");
         accountService.processNewAccount(signUpForm);
 
-        mockMvc.perform(post(SettingController.SETTINGS_ACCOUNT_URL)
+        mockMvc.perform(post(ROOT+SETTINGS+ACCOUNT)
                 .param("nickname","중복닉네임")
                 .with(csrf()))
                 .andExpect(status().isOk())
-                .andExpect(view().name(SettingController.SETTINGS_ACCOUNT_VIEW_NAME))
+                .andExpect(view().name(SETTINGS+ACCOUNT))
                 .andExpect(model().hasErrors());
 
         boolean beforeName = accountRepository.existsByNickname("jaejoon");
@@ -231,11 +232,11 @@ class SettingControllerTest {
     @WithAccount("jaejoon")
     @DisplayName("닉네임 변경_성공")
     void updateNickName() throws Exception {
-        mockMvc.perform(post(SettingController.SETTINGS_ACCOUNT_URL)
+        mockMvc.perform(post(ROOT+SETTINGS+ACCOUNT)
                 .param("nickname","변경닉네임")
                 .with(csrf()))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl(SettingController.SETTINGS_ACCOUNT_URL))
+                .andExpect(redirectedUrl(SETTINGS+ACCOUNT))
                 .andExpect(flash().attributeExists("message"));
         boolean beforeName = accountRepository.existsByNickname("jaejoon");
         boolean afterName = accountRepository.existsByNickname("변경닉네임");

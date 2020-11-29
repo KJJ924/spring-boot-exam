@@ -29,24 +29,17 @@ import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
+@RequestMapping("/settings")
 public class SettingController {
-    static final String SETTINGS_PROFILE_VIEW_NAME = "/settings/profile";
-    static final String SETTINGS_PROFILE_URL= "/settings/profile";
 
-    static final String SETTINGS_PASSWORD_VIEW_NAME = "/settings/password";
-    static final String SETTINGS_PASSWORD_URL= "/settings/password";
-
-    static final String SETTINGS_NOTIFICATION_VIEW_NAME = "/settings/notifications";
-    static final String SETTINGS_NOTIFICATION_URL= "/settings/notifications";
-
-    static final String SETTINGS_ACCOUNT_VIEW_NAME = "/settings/account";
-    static final String SETTINGS_ACCOUNT_URL= "/settings/account";
-
-    static final String SETTINGS_TAGS_VIEW_NAME = "/settings/tags";
-    static final String SETTINGS_TAGS_URL= "/settings/tags";
-
-    static final String SETTINGS_ZONES_VIEW_NAME = "/settings/zones";
-    static final String SETTINGS_ZONES_URL= "/settings/zones";
+    static final String ROOT = "/";
+    static final String SETTINGS ="settings";
+    static final String PROFILE = "/profile";
+    static final String PASSWORD = "/password";
+    static final String NOTIFICATIONS = "/notifications";
+    static final String ACCOUNT = "/account";
+    static final String TAGS = "/tags";
+    static final String ZONES = "/zones";
 
 
     private final AccountService service;
@@ -66,17 +59,17 @@ public class SettingController {
         webDataBinder.addValidators(nicknameFormValidation);
     }
 
-    @GetMapping(SETTINGS_ZONES_URL)
+    @GetMapping(ZONES)
     public String zoneUpdateForm(@CurrentUser Account account , Model model) throws JsonProcessingException {
         Set<Zone> zones = service.getZoneTag(account);
         model.addAttribute("zones", zones.stream().map(Zone::toString).collect(Collectors.toList()));
 
         List<String> collect = zoneRepository.findAll().stream().map(Zone::toString).collect(Collectors.toList());
         model.addAttribute("whitelist",objectMapper.writeValueAsString(collect));
-        return SETTINGS_ZONES_VIEW_NAME;
+        return SETTINGS+ZONES;
     }
 
-    @PostMapping(SETTINGS_ZONES_URL+"/add")
+    @PostMapping(ZONES +"/add")
     @ResponseBody
     public ResponseEntity zoneUpdate(@CurrentUser Account account, @RequestBody ZoneForm zoneForm){
         Zone zone = zoneRepository.findByCityAndProvince(zoneForm.getCityName(),zoneForm.getProvinceName());
@@ -87,7 +80,7 @@ public class SettingController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping(SETTINGS_ZONES_URL+"/remove")
+    @PostMapping(ZONES +"/remove")
     @ResponseBody
     public ResponseEntity zoneRemove(@CurrentUser Account account, @RequestBody ZoneForm zoneForm){
         Zone zone = zoneRepository.findByCityAndProvince(zoneForm.getCityName(),zoneForm.getProvinceName());
@@ -100,7 +93,7 @@ public class SettingController {
 
 
 
-    @GetMapping(SETTINGS_TAGS_URL)
+    @GetMapping(TAGS)
     public String tagsUpdateForm(@CurrentUser Account account, Model model) throws JsonProcessingException {
         Set<Tag> tags = service.getTags(account);
         model.addAttribute(account);
@@ -108,10 +101,10 @@ public class SettingController {
 
         List<String> collect = tagRepository.findAll().stream().map(Tag::getTitle).collect(Collectors.toList());
         model.addAttribute("whiteList",objectMapper.writeValueAsString(collect));
-        return SETTINGS_TAGS_VIEW_NAME;
+        return SETTINGS+TAGS;
     }
 
-    @PostMapping(SETTINGS_TAGS_URL+"/add")
+    @PostMapping(TAGS +"/add")
     @ResponseBody
     public ResponseEntity tageUpdate(@CurrentUser Account account, @RequestBody TagForm tagForm){
         String title = tagForm.getTagTitle();
@@ -123,7 +116,7 @@ public class SettingController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping(SETTINGS_TAGS_URL+"/remove")
+    @PostMapping(TAGS +"/remove")
     @ResponseBody
     public ResponseEntity tageRemove(@CurrentUser Account account , @RequestBody TagForm tagForm){
         String title = tagForm.getTagTitle();
@@ -135,76 +128,76 @@ public class SettingController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping(SETTINGS_ACCOUNT_URL)
+    @GetMapping(ACCOUNT)
     public String accountUpdateForm(@CurrentUser Account account , Model model){
         model.addAttribute(account);
         model.addAttribute(modelMapper.map(account, NicknameForm.class));
 
-        return SETTINGS_ACCOUNT_VIEW_NAME;
+        return SETTINGS+ACCOUNT;
     }
 
-    @PostMapping(SETTINGS_ACCOUNT_URL)
+    @PostMapping(ACCOUNT)
     public String accountUpdate(@CurrentUser Account account ,@Valid NicknameForm nicknameForm ,Errors errors
             ,Model model ,RedirectAttributes attributes ){
         if(errors.hasErrors()){
             model.addAttribute(account);
-            return SETTINGS_ACCOUNT_VIEW_NAME;
+            return SETTINGS+ACCOUNT;
         }
         attributes.addFlashAttribute("message","변경 되었습니다");
         service.updateNickName(account,nicknameForm);
-        return "redirect:"+SETTINGS_ACCOUNT_VIEW_NAME;
+        return "redirect:"+SETTINGS+ACCOUNT;
     }
 
-    @GetMapping(SETTINGS_NOTIFICATION_URL)
+    @GetMapping(NOTIFICATIONS)
     public String notificationsUpdateForm(@CurrentUser Account account , Model model){
         model.addAttribute(account);
         model.addAttribute(modelMapper.map(account, Notifications.class));
-        return SETTINGS_NOTIFICATION_VIEW_NAME;
+        return SETTINGS+NOTIFICATIONS;
     }
 
-    @PostMapping(SETTINGS_NOTIFICATION_URL)
+    @PostMapping(NOTIFICATIONS)
     public String notificationUpdate(@CurrentUser Account account ,RedirectAttributes attributes
            , @Valid @ModelAttribute Notifications  notifications , Errors errors ,Model model){
         if(errors.hasErrors()){
             model.addAttribute(account);
-            return SETTINGS_NOTIFICATION_VIEW_NAME;
+            return SETTINGS+NOTIFICATIONS;
         }
         attributes.addFlashAttribute("message","변경되었습니다");
         service.updateNotifications(account,notifications);
 
-        return "redirect:"+SETTINGS_NOTIFICATION_VIEW_NAME;
+        return "redirect:"+SETTINGS+NOTIFICATIONS;
     }
-    @GetMapping(SETTINGS_PASSWORD_URL)
+    @GetMapping(PASSWORD)
     public String passwordUpdateForm(Model model){
         model.addAttribute(new PasswordForm());
-        return SETTINGS_PASSWORD_VIEW_NAME;
+        return SETTINGS+PASSWORD;
     }
-    @PostMapping(SETTINGS_PASSWORD_URL)
+    @PostMapping(PASSWORD)
     public String passwordUpdate(@CurrentUser Account account,@Valid PasswordForm form ,Errors errors
             ,RedirectAttributes attributes){
         if(errors.hasErrors()){
-            return SETTINGS_PASSWORD_URL;
+            return SETTINGS+PASSWORD;
         }
         service.updatePassword(account,form);
         attributes.addFlashAttribute("message","패스워드가 변경됨");
-        return "redirect:"+SETTINGS_PASSWORD_VIEW_NAME;
+        return "redirect:"+SETTINGS+PASSWORD;
     }
-    @GetMapping(SETTINGS_PROFILE_URL)
+    @GetMapping(PROFILE)
     public String profileUpdateForm(@CurrentUser Account account , Model model){
         model.addAttribute(account);
         model.addAttribute(modelMapper.map(account, Profile.class));
-        return SETTINGS_PROFILE_VIEW_NAME;
+        return SETTINGS+PROFILE;
     }
 
-    @PostMapping(SETTINGS_PROFILE_URL)
+    @PostMapping(PROFILE)
     public String profileUpdate(@CurrentUser Account account, @Valid @ModelAttribute Profile profile,
                                 Errors errors , Model model, RedirectAttributes redirectAttributes){
         if(errors.hasErrors()){
             model.addAttribute(account);
-            return SETTINGS_PROFILE_VIEW_NAME;
+            return SETTINGS+PROFILE;
         }
         service.updateProfile(account ,profile);
         redirectAttributes.addFlashAttribute("message","수정이 완료되었습니다");
-        return "redirect:"+SETTINGS_PROFILE_URL;
+        return "redirect:"+ PROFILE;
     }
 }
