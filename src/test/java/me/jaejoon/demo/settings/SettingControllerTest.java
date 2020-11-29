@@ -6,9 +6,12 @@ import me.jaejoon.demo.account.AccountRepository;
 import me.jaejoon.demo.account.AccountService;
 import me.jaejoon.demo.domain.Account;
 import me.jaejoon.demo.domain.Tag;
+import me.jaejoon.demo.domain.Zone;
 import me.jaejoon.demo.form.SignUpForm;
 import me.jaejoon.demo.form.TagForm;
+import me.jaejoon.demo.form.ZoneForm;
 import me.jaejoon.demo.tag.TagRepository;
+import me.jaejoon.demo.zone.ZoneRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -49,10 +52,66 @@ class SettingControllerTest {
     @Autowired
     TagRepository tagRepository;
 
+    @Autowired
+    ZoneRepository zoneRepository;
+
     @AfterEach
     void afterEach(){
         accountRepository.deleteAll();
         tagRepository.deleteAll();
+    }
+    @Test
+    @WithAccount("jaejoon")
+    @DisplayName("관심지역 수정 폼")
+    void zonesForm() throws Exception {
+        mockMvc.perform(get(ROOT+SETTINGS+ZONES))
+                .andExpect(status().isOk())
+                .andExpect(view().name(SETTINGS+ZONES))
+                .andExpect(model().attributeExists("zones"))
+                .andExpect(model().attributeExists("whitelist"));
+
+    }
+    @Test
+    @WithAccount("jaejoon")
+    @DisplayName("관심지역 추가")
+    void addZones() throws Exception {
+        Zone testZone = Zone.builder().city("Asan").localNameOfCity("아산시").province("South Chungcheong").build();
+
+        ZoneForm zoneForm = new ZoneForm();
+        zoneForm.setZoneName(testZone.toString());
+
+        mockMvc.perform(post(ROOT+SETTINGS+ZONES+"/add")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(zoneForm)))
+                .andExpect(status().isOk());
+
+        Account jaejoon = accountRepository.findByNickname("jaejoon");
+        Zone zone = zoneRepository.findByCityAndProvince(testZone.getCity(), testZone.getProvince());
+
+        assertThat(jaejoon.getZones().contains(zone)).isTrue();
+    }
+
+    @Test
+    @WithAccount("jaejoon")
+    @DisplayName("관심지역 삭제")
+    void removeZones() throws Exception {
+        Account jaejoon = accountRepository.findByNickname("jaejoon");
+        Zone testZone = Zone.builder().city("Asan").localNameOfCity("아산시").province("South Chungcheong").build();
+        jaejoon.getZones().add(testZone);
+
+        ZoneForm zoneForm = new ZoneForm();
+        zoneForm.setZoneName(testZone.toString());
+
+        mockMvc.perform(post(ROOT+SETTINGS+ZONES+"/remove")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(zoneForm)))
+                .andExpect(status().isOk());
+
+        Zone zone = zoneRepository.findByCityAndProvince(testZone.getCity(), testZone.getProvince());
+
+        assertThat(jaejoon.getZones().contains(zone)).isFalse();
     }
 
     @Test
