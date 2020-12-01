@@ -35,6 +35,7 @@ public class AccountService implements UserDetailsService {
         newAccount.generateEmailCheckToken();
         SimpleMailMessage mailMessage = new SimpleMailMessage();
         mailMessage.setSubject("회원가입 인증메일");
+        mailMessage.setTo(newAccount.getEmail());
         mailMessage.setText("/check-email-token?token="+ newAccount.getEmailCheckToken()
                 +"&email="+ newAccount.getEmail());
         mailSender.send(mailMessage);
