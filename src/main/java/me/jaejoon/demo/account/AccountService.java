@@ -1,13 +1,17 @@
 package me.jaejoon.demo.account;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import me.jaejoon.demo.domain.Account;
 import me.jaejoon.demo.domain.Tag;
 import me.jaejoon.demo.domain.Zone;
 import me.jaejoon.demo.form.*;
+import me.jaejoon.demo.mail.EmailMessage;
+import me.jaejoon.demo.mail.EmailService;
 import org.modelmapper.ModelMapper;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,6 +22,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -25,20 +31,22 @@ import java.util.Set;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class AccountService implements UserDetailsService {
     private final AccountRepository accountRepository;
-    private final JavaMailSender mailSender;
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
+    private final EmailService emailService;
 
     public void sendSignUpConfirmEmail(Account newAccount) {
         newAccount.generateEmailCheckToken();
-        SimpleMailMessage mailMessage = new SimpleMailMessage();
-        mailMessage.setSubject("회원가입 인증메일");
-        mailMessage.setTo(newAccount.getEmail());
-        mailMessage.setText("/check-email-token?token="+ newAccount.getEmailCheckToken()
-                +"&email="+ newAccount.getEmail());
-        mailSender.send(mailMessage);
+        EmailMessage emailMessage = EmailMessage.builder()
+                .to(newAccount.getEmail())
+                .subject("회원가입 인증 메일")
+                .message("/check-email-token?token=" + newAccount.getEmailCheckToken()
+                        +"&email="+ newAccount.getEmail())
+                .build();
+        emailService.sendEmail(emailMessage);
     }
 
     private Account saveNewAccount(SignUpForm signUpForm) {
@@ -46,7 +54,6 @@ public class AccountService implements UserDetailsService {
         Account account = modelMapper.map(signUpForm, Account.class);
         return accountRepository.save(account);
     }
-
     public Account processNewAccount(SignUpForm signUpForm) {
         Account account = saveNewAccount(signUpForm);
         account.generateEmailCheckToken();
@@ -105,12 +112,14 @@ public class AccountService implements UserDetailsService {
 
     public void sendLoginLink(Account account) {
         account.generateEmailCheckToken();
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(account.getEmail());
-        message.setSubject("로그인 메일");
-        message.setText("/login-by-email?token=" + account.getEmailCheckToken() +
-                "&email=" + account.getEmail());
-        mailSender.send(message);
+        EmailMessage emailMessage = EmailMessage.builder()
+                .to(account.getEmail())
+                .subject("이메일 로그인 인증 메일")
+                .message("/login-by-email?token=" + account.getEmailCheckToken() +
+                        "&email=" + account.getEmail())
+                .build();
+        emailService.sendEmail(emailMessage);
+
     }
 
     public void addTag(Account account, Tag tag) {
