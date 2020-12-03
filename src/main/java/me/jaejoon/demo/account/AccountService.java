@@ -2,6 +2,7 @@ package me.jaejoon.demo.account;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.jaejoon.demo.config.AppProperties;
 import me.jaejoon.demo.domain.Account;
 import me.jaejoon.demo.domain.Tag;
 import me.jaejoon.demo.domain.Zone;
@@ -21,6 +22,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
@@ -37,14 +40,24 @@ public class AccountService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
     private final EmailService emailService;
+    private final AppProperties properties;
+    private final TemplateEngine templateEngine;
 
     public void sendSignUpConfirmEmail(Account newAccount) {
         newAccount.generateEmailCheckToken();
+        Context context = new Context();
+        context.setVariable("nickname",newAccount.getNickname());
+        context.setVariable("message","이메일을 인증하려면 아래를 클릭하세요");
+        context.setVariable("host",properties.getHost());
+        context.setVariable("link","/check-email-token?token=" + newAccount.getEmailCheckToken()
+                +"&email="+ newAccount.getEmail());
+        context.setVariable("linkName","이메일 인증");
+
+        String template = templateEngine.process("mail/send-mail", context);
         EmailMessage emailMessage = EmailMessage.builder()
                 .to(newAccount.getEmail())
                 .subject("회원가입 인증 메일")
-                .message("/check-email-token?token=" + newAccount.getEmailCheckToken()
-                        +"&email="+ newAccount.getEmail())
+                .message(template)
                 .build();
         emailService.sendEmail(emailMessage);
     }
@@ -112,11 +125,19 @@ public class AccountService implements UserDetailsService {
 
     public void sendLoginLink(Account account) {
         account.generateEmailCheckToken();
+        Context context = new Context();
+        context.setVariable("nickname",account.getNickname());
+        context.setVariable("message","이메일 로그인을 이용하기 위해 아래를 클릭하세요");
+        context.setVariable("host",properties.getHost());
+        context.setVariable("link","/login-by-email?token=" + account.getEmailCheckToken() +
+                "&email=" + account.getEmail());
+        context.setVariable("linkName","로그인");
+
+        String template = templateEngine.process("mail/send-mail", context);
         EmailMessage emailMessage = EmailMessage.builder()
                 .to(account.getEmail())
                 .subject("이메일 로그인 인증 메일")
-                .message("/login-by-email?token=" + account.getEmailCheckToken() +
-                        "&email=" + account.getEmail())
+                .message(template)
                 .build();
         emailService.sendEmail(emailMessage);
 
