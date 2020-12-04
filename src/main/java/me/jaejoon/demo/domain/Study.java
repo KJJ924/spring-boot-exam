@@ -5,6 +5,7 @@ import org.hibernate.annotations.Fetch;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -16,10 +17,10 @@ public class Study {
     private Long id;
 
     @ManyToMany
-    private Set<Account> manager;
+    private Set<Account> manager = new HashSet<>();
 
     @ManyToMany
-    private Set<Account> member;
+    private Set<Account> member = new HashSet<>();
 
     @Column(unique = true)
     private String path;
@@ -35,10 +36,10 @@ public class Study {
     private String image;
 
     @ManyToMany
-    private Set<Tag> tags;
+    private Set<Tag> tags = new HashSet<>();
 
     @ManyToMany
-    private Set<Zone> zones;
+    private Set<Zone> zones = new HashSet<>();
 
     private LocalDateTime publishedDateTime;
 
@@ -53,5 +54,8 @@ public class Study {
     private boolean closed;
 
     private boolean userBanner;
-    
+
+    public void addManger(Account account) {
+        this.manager.add(account);
+    }
 }

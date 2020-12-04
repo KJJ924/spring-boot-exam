@@ -145,7 +145,7 @@ public class SettingController {
         }
         attributes.addFlashAttribute("message","변경 되었습니다");
         service.updateNickName(account,nicknameForm);
-        return "redirect:"+SETTINGS+ACCOUNT;
+        return "redirect:/"+SETTINGS+ACCOUNT;
     }
 
     @GetMapping(NOTIFICATIONS)
@@ -165,7 +165,7 @@ public class SettingController {
         attributes.addFlashAttribute("message","변경되었습니다");
         service.updateNotifications(account,notifications);
 
-        return "redirect:"+SETTINGS+NOTIFICATIONS;
+        return "redirect:/"+SETTINGS+NOTIFICATIONS;
     }
     @GetMapping(PASSWORD)
     public String passwordUpdateForm(Model model){
@@ -180,7 +180,7 @@ public class SettingController {
         }
         service.updatePassword(account,form);
         attributes.addFlashAttribute("message","패스워드가 변경됨");
-        return "redirect:"+SETTINGS+PASSWORD;
+        return "redirect:/"+SETTINGS+PASSWORD;
     }
     @GetMapping(PROFILE)
     public String profileUpdateForm(@CurrentUser Account account , Model model){
@@ -198,6 +198,6 @@ public class SettingController {
         }
         service.updateProfile(account ,profile);
         redirectAttributes.addFlashAttribute("message","수정이 완료되었습니다");
-        return "redirect:"+ PROFILE;
+        return "redirect:/"+SETTINGS+PROFILE;
     }
 }
