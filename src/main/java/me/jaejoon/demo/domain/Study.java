@@ -1,13 +1,19 @@
 package me.jaejoon.demo.domain;
 
 import lombok.*;
-import org.hibernate.annotations.Fetch;
+import me.jaejoon.demo.account.UserAccount;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
+@NamedEntityGraph(name = "Study.withAll",attributeNodes = {
+        @NamedAttributeNode("tags"),
+        @NamedAttributeNode("members"),
+        @NamedAttributeNode("managers"),
+        @NamedAttributeNode("zones")
+})
 @Entity
 @Getter @Setter @EqualsAndHashCode(of = "id")
 @NoArgsConstructor @AllArgsConstructor @Builder
@@ -17,10 +23,10 @@ public class Study {
     private Long id;
 
     @ManyToMany
-    private Set<Account> manager = new HashSet<>();
+    private Set<Account> managers = new HashSet<>();
 
     @ManyToMany
-    private Set<Account> member = new HashSet<>();
+    private Set<Account> members = new HashSet<>();
 
     @Column(unique = true)
     private String path;
@@ -53,9 +59,24 @@ public class Study {
 
     private boolean closed;
 
-    private boolean userBanner;
+    private boolean useBanner;
 
     public void addManger(Account account) {
-        this.manager.add(account);
+        this.managers.add(account);
+    }
+
+    public boolean isJoinable(UserAccount userAccount) {
+        Account account = userAccount.getAccount();
+        return this.isPublished() && this.isRecruiting()
+                && !this.members.contains(account) && !this.managers.contains(account);
+
+    }
+
+    public boolean isMember(UserAccount userAccount) {
+        return this.members.contains(userAccount.getAccount());
+    }
+
+    public boolean isManager(UserAccount userAccount) {
+        return this.managers.contains(userAccount.getAccount());
     }
 }
