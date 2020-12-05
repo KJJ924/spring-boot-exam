@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import javax.validation.Valid;
+import javax.websocket.server.PathParam;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
@@ -43,8 +44,9 @@ public class StudyController {
 
     @PostMapping("/new-study")
     public String studyCreate(@CurrentUser Account account ,
-                              @Valid StudyForm studyForm, Errors errors){
+                              @Valid StudyForm studyForm, Errors errors , Model model){
         if (errors.hasErrors()){
+            model.addAttribute(account);
             return "redirect:/new-study";
         }
         Study study =studyService.createStudy(account,modelMapper.map(studyForm,Study.class));
@@ -57,5 +59,12 @@ public class StudyController {
         model.addAttribute(account);
         model.addAttribute(study);
         return "study/view";
+    }
+
+    @GetMapping("/study/{path}/members")
+    public String viewStudyMembers(@CurrentUser Account account, Model model , @PathVariable String path){
+        model.addAttribute(account);
+        model.addAttribute(studyRepository.findByPath(path));
+        return "study/members";
     }
 }
