@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class StudyService {
     private final StudyRepository studyRepository;
+
     public Study createStudy(Account account, Study study) {
         Study newStudy = studyRepository.save(study);
         newStudy.addManger(account);
