@@ -83,4 +83,8 @@ public class Account {
 
 
     }
+
+    public boolean isManagerOf(Study study) {
+       return study.getManagers().contains(this);
+    }
 }
