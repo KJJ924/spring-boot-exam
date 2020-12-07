@@ -53,4 +53,36 @@ public class StudySettingController {
     private String getPath(String path){
         return URLEncoder.encode(path, StandardCharsets.UTF_8);
     }
+
+    @GetMapping("banner")
+    public String viewStudyBanner(@CurrentUser Account account , @PathVariable String path, Model model){
+        Study studyToUpdate = studyService.getStudyToUpdate(account, path);
+        model.addAttribute(studyToUpdate);
+        model.addAttribute(account);
+        return "study/banner";
+    }
+    @PostMapping("/banner")
+    public String studyImageSubmit(@CurrentUser Account account, @PathVariable String path,
+                                   String image, RedirectAttributes attributes) {
+        Study study = studyService.getStudyToUpdate(account, path);
+        studyService.updateStudyImage(study, image);
+        attributes.addFlashAttribute("message", "스터디 이미지를 수정했습니다.");
+        return "redirect:/study/" + getPath(path) + "/settings/banner";
+    }
+
+    @PostMapping("banner/enable")
+    public String bannerEnable(@CurrentUser Account account , @PathVariable String path,RedirectAttributes attributes){
+        Study study = studyService.getStudyToUpdate(account, path);
+        studyService.onOffBanner(study,true);
+        attributes.addFlashAttribute("message","변경되었습니다");
+        return "redirect:/study/"+getPath(path)+"/settings/banner";
+    }
+
+    @PostMapping("banner/disable")
+    public String bannerDisable(@CurrentUser Account account , @PathVariable String path,RedirectAttributes attributes){
+        Study study = studyService.getStudyToUpdate(account, path);
+        studyService.onOffBanner(study,false);
+        attributes.addFlashAttribute("message","변경되었습니다");
+        return "redirect:/study/"+getPath(path)+"/settings/banner";
+    }
 }
