@@ -3,6 +3,7 @@ package me.jaejoon.demo.study;
 import lombok.RequiredArgsConstructor;
 import me.jaejoon.demo.domain.Account;
 import me.jaejoon.demo.domain.Study;
+import me.jaejoon.demo.domain.Zone;
 import me.jaejoon.demo.study.form.StudyDescriptionForm;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.access.AccessDeniedException;
@@ -50,7 +51,7 @@ public class StudyService {
     }
 
     public Study getStudyZonesToUpdate(Account account, String path) {
-        Study study = getStudy(path);
+        Study study = studyRepository.findAccountWithZonesByPath(path);
         checkExistingStudy(path,study);
         checkManager(account,study);
         return study;
@@ -69,9 +70,17 @@ public class StudyService {
     }
 
     public Study getStudyTagsToUpdate(Account account, String path) {
-        Study study = getStudy(path);
+        Study study = studyRepository.findAccountWithTagsByPath(path);
         checkExistingStudy(path,study);
         checkManager(account,study);
         return study;
+    }
+
+    public void addZones(Study study, Zone zone) {
+        study.getZones().add(zone);
+    }
+
+    public void removeZones(Study study, Zone zone) {
+        study.getZones().remove(zone);
     }
 }

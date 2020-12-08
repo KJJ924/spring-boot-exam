@@ -8,18 +8,17 @@ import me.jaejoon.demo.domain.Account;
 import me.jaejoon.demo.domain.Study;
 import me.jaejoon.demo.domain.Tag;
 import me.jaejoon.demo.domain.Zone;
+import me.jaejoon.demo.form.ZoneForm;
 import me.jaejoon.demo.study.form.StudyDescriptionForm;
 import me.jaejoon.demo.tag.TagRepository;
 import me.jaejoon.demo.tag.TagService;
 import me.jaejoon.demo.zone.ZoneRepository;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.validation.Valid;
@@ -102,7 +101,7 @@ public class StudySettingController {
 
     @GetMapping("/zones")
     public String viewSettingsZones(@CurrentUser Account account ,Model model,@PathVariable String path) throws JsonProcessingException {
-        Study study = studyService.getStudyZonesToUpdate(account, path);
+        Study study = studyService.getStudyToUpdate(account, path);
         model.addAttribute(account);
         model.addAttribute(study);
         model.addAttribute("zones",study.getZones()
@@ -112,9 +111,37 @@ public class StudySettingController {
         return "study/zones";
     }
 
+    @PostMapping("/zones/add")
+    @ResponseBody
+    public ResponseEntity addZones(@CurrentUser Account account,@PathVariable String path, @RequestBody ZoneForm zoneForm){
+        Study study = studyService.getStudyZonesToUpdate(account, path);
+        Zone zone = zoneRepository.findByCityAndProvince(zoneForm.getCityName(),
+                zoneForm.getProvinceName());
+        if(zone==null){
+            return ResponseEntity.badRequest().build();
+        }
+
+        studyService.addZones(study,zone);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/zones/remove")
+    @ResponseBody
+    public ResponseEntity removeZones(@CurrentUser Account account , @PathVariable String path, @RequestBody ZoneForm zoneForm){
+        Study study = studyService.getStudyZonesToUpdate(account, path);
+        Zone zone = zoneRepository.findByCityAndProvince(zoneForm.getCityName(),
+                zoneForm.getProvinceName());
+        if(zone==null){
+            return ResponseEntity.badRequest().build();
+        }
+
+        studyService.removeZones(study,zone);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/tags")
     public String viewSettingsTags(@CurrentUser Account account, Model model , @PathVariable String path) throws JsonProcessingException {
-        Study study = studyService.getStudyTagsToUpdate(account, path);
+        Study study = studyService.getStudyToUpdate(account, path);
         model.addAttribute(study);
         model.addAttribute(account);
         model.addAttribute("tags",study.getTags()
