@@ -10,6 +10,7 @@ import me.jaejoon.demo.domain.Tag;
 import me.jaejoon.demo.domain.Zone;
 import me.jaejoon.demo.form.*;
 import me.jaejoon.demo.tag.TagRepository;
+import me.jaejoon.demo.tag.TagService;
 import me.jaejoon.demo.validation.NicknameFormValidation;
 import me.jaejoon.demo.validation.PasswordValidation;
 import me.jaejoon.demo.zone.ZoneRepository;
@@ -48,6 +49,7 @@ public class SettingController {
     private final TagRepository tagRepository;
     private final ZoneRepository zoneRepository;
     private final ObjectMapper objectMapper;
+    private final TagService tagService;
 
     @InitBinder("passwordForm")
     public void initBinder(WebDataBinder webDataBinder){
@@ -100,7 +102,7 @@ public class SettingController {
         model.addAttribute("tags",tags.stream().map(Tag::getTitle).collect(Collectors.toList()));
 
         List<String> collect = tagRepository.findAll().stream().map(Tag::getTitle).collect(Collectors.toList());
-        model.addAttribute("whiteList",objectMapper.writeValueAsString(collect));
+        model.addAttribute("whitelist",objectMapper.writeValueAsString(collect));
         return SETTINGS+TAGS;
     }
 
@@ -108,10 +110,7 @@ public class SettingController {
     @ResponseBody
     public ResponseEntity tageUpdate(@CurrentUser Account account, @RequestBody TagForm tagForm){
         String title = tagForm.getTagTitle();
-        Tag tag =  tagRepository.findByTitle(title);
-        if(tag == null){
-            tag = tagRepository.save(Tag.builder().title(title).build());
-        }
+        Tag tag = tagService.findOrCreateNew(title);
         service.addTag(account, tag);
         return ResponseEntity.ok().build();
     }

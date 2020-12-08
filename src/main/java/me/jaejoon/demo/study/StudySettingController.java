@@ -1,10 +1,17 @@
 package me.jaejoon.demo.study;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import me.jaejoon.demo.account.CurrentUser;
 import me.jaejoon.demo.domain.Account;
 import me.jaejoon.demo.domain.Study;
+import me.jaejoon.demo.domain.Tag;
+import me.jaejoon.demo.domain.Zone;
 import me.jaejoon.demo.study.form.StudyDescriptionForm;
+import me.jaejoon.demo.tag.TagRepository;
+import me.jaejoon.demo.tag.TagService;
+import me.jaejoon.demo.zone.ZoneRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,6 +25,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.validation.Valid;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Controller
@@ -26,6 +35,11 @@ public class StudySettingController {
 
     private final ModelMapper modelMapper;
     private final StudyService studyService;
+    private final TagService tagService;
+    private final TagRepository tagRepository;
+    private final ZoneRepository zoneRepository;
+    private final ObjectMapper objectMapper;
+
 
     @GetMapping("/description")
     public String viewStudySetting(@CurrentUser Account account, Model model, @PathVariable String path){
@@ -84,5 +98,29 @@ public class StudySettingController {
         studyService.onOffBanner(study,false);
         attributes.addFlashAttribute("message","변경되었습니다");
         return "redirect:/study/"+getPath(path)+"/settings/banner";
+    }
+
+    @GetMapping("/zones")
+    public String viewSettingsZones(@CurrentUser Account account ,Model model,@PathVariable String path) throws JsonProcessingException {
+        Study study = studyService.getStudyZonesToUpdate(account, path);
+        model.addAttribute(account);
+        model.addAttribute(study);
+        model.addAttribute("zones",study.getZones()
+                .stream().map(Zone::toString).collect(Collectors.toList()));
+        List<String> allZones = zoneRepository.findAll().stream().map(Zone::toString).collect(Collectors.toList());
+        model.addAttribute("whitelist",objectMapper.writeValueAsString(allZones));
+        return "study/zones";
+    }
+
+    @GetMapping("/tags")
+    public String viewSettingsTags(@CurrentUser Account account, Model model , @PathVariable String path) throws JsonProcessingException {
+        Study study = studyService.getStudyTagsToUpdate(account, path);
+        model.addAttribute(study);
+        model.addAttribute(account);
+        model.addAttribute("tags",study.getTags()
+                .stream().map(Tag::toString).collect(Collectors.toList()));
+        List<String> allTags = tagRepository.findAll().stream().map(Tag::getTitle).collect(Collectors.toList());
+        model.addAttribute("whitelist",objectMapper.writeValueAsString(allTags));
+        return "study/tags";
     }
 }
