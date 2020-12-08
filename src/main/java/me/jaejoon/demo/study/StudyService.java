@@ -3,6 +3,7 @@ package me.jaejoon.demo.study;
 import lombok.RequiredArgsConstructor;
 import me.jaejoon.demo.domain.Account;
 import me.jaejoon.demo.domain.Study;
+import me.jaejoon.demo.domain.Tag;
 import me.jaejoon.demo.domain.Zone;
 import me.jaejoon.demo.study.form.StudyDescriptionForm;
 import org.modelmapper.ModelMapper;
@@ -82,5 +83,13 @@ public class StudyService {
 
     public void removeZones(Study study, Zone zone) {
         study.getZones().remove(zone);
+    }
+
+    public void addTags(Study study, Tag tag) {
+        study.getTags().add(tag);
+    }
+
+    public void removeTags(Study study, Tag tag) {
+        study.getTags().remove(tag);
     }
 }

@@ -8,6 +8,7 @@ import me.jaejoon.demo.domain.Account;
 import me.jaejoon.demo.domain.Study;
 import me.jaejoon.demo.domain.Tag;
 import me.jaejoon.demo.domain.Zone;
+import me.jaejoon.demo.form.TagForm;
 import me.jaejoon.demo.form.ZoneForm;
 import me.jaejoon.demo.study.form.StudyDescriptionForm;
 import me.jaejoon.demo.tag.TagRepository;
@@ -145,9 +146,34 @@ public class StudySettingController {
         model.addAttribute(study);
         model.addAttribute(account);
         model.addAttribute("tags",study.getTags()
-                .stream().map(Tag::toString).collect(Collectors.toList()));
+                .stream().map(Tag::getTitle).collect(Collectors.toList()));
         List<String> allTags = tagRepository.findAll().stream().map(Tag::getTitle).collect(Collectors.toList());
         model.addAttribute("whitelist",objectMapper.writeValueAsString(allTags));
         return "study/tags";
+    }
+
+    @ResponseBody
+    @PostMapping("tags/add")
+    public ResponseEntity addTags(@CurrentUser Account account , @RequestBody TagForm tagForm ,@PathVariable String path){
+        Study study = studyService.getStudyTagsToUpdate(account, path);
+        Tag tag = tagRepository.findByTitle(tagForm.getTagTitle());
+        if(tag==null){
+            return ResponseEntity.badRequest().build();
+        }
+        studyService.addTags(study,tag);
+        return ResponseEntity.ok().build();
+    }
+
+
+    @ResponseBody
+    @PostMapping("tags/remove")
+    public ResponseEntity removeTags(@CurrentUser Account account , @RequestBody TagForm tagForm ,@PathVariable String path){
+        Study study = studyService.getStudyTagsToUpdate(account, path);
+        Tag tag = tagRepository.findByTitle(tagForm.getTagTitle());
+        if(tag==null){
+            return ResponseEntity.badRequest().build();
+        }
+        studyService.removeTags(study,tag);
+        return ResponseEntity.ok().build();
     }
 }
