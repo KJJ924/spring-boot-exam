@@ -92,4 +92,27 @@ public class StudyService {
     public void removeTags(Study study, Tag tag) {
         study.getTags().remove(tag);
     }
+
+    public Study getStudyToUpdateStatus(Account account, String path) {
+        Study study = studyRepository.findAccountWithManagerByPath(path);
+        checkExistingStudy(path,study);
+        checkManager(account,study);
+        return study;
+    }
+
+    public void publish(Study study) {
+        study.publish();
+    }
+
+    public void closed(Study study) {
+        study.closed();
+    }
+
+    public void startRecruit(Study study) {
+        study.startRecruiting();
+    }
+
+    public void stopRecruit(Study study) {
+        study.stopRecruiting();
+    }
 }
