@@ -62,8 +62,70 @@ class StudySettingControllerTest {
         Study study = studyRepository.findByPath(path);
         assertThat(study.getShortDescription()).isEqualTo("shortDescription 변경됨");
         assertThat(study.getFullDescription()).isEqualTo("fullDescription 변경됨");
+    }
+
+    @Test
+    @DisplayName("배너 설정 페이지 보기")
+    @WithAccountAndStudyPage(value ="kjj924",title ="봄싹스터디",path = "test")
+    void showStudySettingBannerPage() throws Exception {
+        String path = URLEncoder.encode("test", StandardCharsets.UTF_8);
+
+        mockMvc.perform(get("/study/"+ path +"/settings/banner"))
+                .andExpect(model().attributeExists("study"))
+                .andExpect(model().attributeExists("account"))
+                .andExpect(view().name("study/banner"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("배너 이미지 변경 ")
+    @WithAccountAndStudyPage(value ="kjj924",title ="봄싹스터디",path = "test")
+    void StudySettingBannerEdit() throws Exception {
+        String path = URLEncoder.encode("test", StandardCharsets.UTF_8);
+
+        mockMvc.perform(post("/study/"+ path +"/settings/banner")
+                .param("image","ImageDataURL")
+                .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(flash().attributeExists("message"))
+                .andExpect(redirectedUrl("/study/"+ path +"/settings/banner"));
 
 
+        Study study = studyRepository.findByPath(path);
+
+        assertThat(study.getImage()).isEqualTo("ImageDataURL");
+    }
+
+    @Test
+    @DisplayName("배너 이미지 on ")
+    @WithAccountAndStudyPage(value ="kjj924",title ="봄싹스터디",path = "test")
+    void onBanner() throws Exception {
+        String path = URLEncoder.encode("test", StandardCharsets.UTF_8);
+
+        mockMvc.perform(post("/study/"+ path +"/settings/banner/enable")
+                .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(flash().attributeExists("message"))
+                .andExpect(redirectedUrl("/study/"+ path +"/settings/banner"));
+
+        Study study = studyRepository.findByPath(path);
+        assertThat(study.isUseBanner()).isTrue();
+    }
+
+    @Test
+    @DisplayName("배너 이미지 off ")
+    @WithAccountAndStudyPage(value ="kjj924",title ="봄싹스터디",path = "test")
+    void offBanner() throws Exception {
+        String path = URLEncoder.encode("test", StandardCharsets.UTF_8);
+
+        mockMvc.perform(post("/study/"+ path +"/settings/banner/disable")
+                .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(flash().attributeExists("message"))
+                .andExpect(redirectedUrl("/study/"+ path +"/settings/banner"));
+
+        Study study = studyRepository.findByPath(path);
+        assertThat(study.isUseBanner()).isFalse();
     }
 
 }
