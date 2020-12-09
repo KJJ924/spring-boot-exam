@@ -1,13 +1,18 @@
 package me.jaejoon.demo.study;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import me.jaejoon.demo.WithAccountAndStudyPage;
 import me.jaejoon.demo.account.CurrentUser;
 import me.jaejoon.demo.domain.Study;
+import me.jaejoon.demo.domain.Zone;
+import me.jaejoon.demo.form.ZoneForm;
+import me.jaejoon.demo.zone.ZoneRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +37,14 @@ class StudySettingControllerTest {
 
     @Autowired
     StudyRepository studyRepository;
+
+    @Autowired
+    ObjectMapper mapper;
+
+    @Autowired
+    ZoneRepository zoneRepository;
+    @Autowired
+    StudyService studyService;
 
     @Test
     @DisplayName("스터디 소개 설정 페이지 보기")
@@ -126,6 +139,62 @@ class StudySettingControllerTest {
 
         Study study = studyRepository.findByPath(path);
         assertThat(study.isUseBanner()).isFalse();
+    }
+
+    @Test
+    @DisplayName("zone 설정 페이지 보기")
+    @WithAccountAndStudyPage(value ="kjj924",title ="봄싹스터디",path = "test")
+    void viewZoneSettingPage() throws Exception{
+        String path = URLEncoder.encode("test", StandardCharsets.UTF_8);
+
+        mockMvc.perform(get("/study/"+ path +"/settings/zones"))
+                .andExpect(model().attributeExists("study"))
+                .andExpect(model().attributeExists("account"))
+                .andExpect(model().attributeExists("zones"))
+                .andExpect(model().attributeExists("whitelist"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("study/zones"));
+    }
+
+    @Test
+    @DisplayName("zone 추가")
+    @WithAccountAndStudyPage(value ="kjj924",title ="봄싹스터디",path = "test")
+    void addZones() throws Exception{
+        Zone testZone = Zone.builder().city("Asan").localNameOfCity("아산시").province("South Chungcheong").build();
+        ZoneForm zoneForm = new ZoneForm();
+        zoneForm.setZoneName(testZone.toString());
+        String path = URLEncoder.encode("test", StandardCharsets.UTF_8);
+
+        mockMvc.perform(post("/study/"+ path +"/settings/zones/add")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(zoneForm))
+                .with(csrf()))
+                .andExpect(status().isOk());
+
+        Study study = studyRepository.findByPath(path);
+        Zone zone = zoneRepository.findByCityAndProvince(testZone.getCity(), testZone.getProvince());
+
+        assertThat(study.getZones().contains(zone)).isTrue();
+    }
+
+    @Test
+    @DisplayName("zone 삭제")
+    @WithAccountAndStudyPage(value ="kjj924",title ="봄싹스터디",path = "test")
+    void removeZones() throws Exception{
+        Zone testZone = Zone.builder().city("Asan").localNameOfCity("아산시").province("South Chungcheong").build();
+        ZoneForm zoneForm = new ZoneForm();
+        zoneForm.setZoneName(testZone.toString());
+        String path = URLEncoder.encode("test", StandardCharsets.UTF_8);
+
+        Study study = studyRepository.findByPath(path);
+        mockMvc.perform(post("/study/"+ path +"/settings/zones/remove")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(zoneForm))
+                .with(csrf()))
+                .andExpect(status().isOk());
+
+        Zone zone = zoneRepository.findByCityAndProvince(testZone.getCity(), testZone.getProvince());
+        assertThat(study.getZones().contains(zone)).isFalse();
     }
 
 }
