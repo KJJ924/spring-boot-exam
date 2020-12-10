@@ -182,19 +182,17 @@ class StudySettingControllerTest {
     @WithAccountAndStudyPage(value ="kjj924",title ="봄싹스터디",path = "test")
     void removeZones() throws Exception{
         Zone testZone = Zone.builder().city("Asan").localNameOfCity("아산시").province("South Chungcheong").build();
+        Zone zone = zoneRepository.findByCityAndProvince(testZone.getCity(), testZone.getProvince());
         ZoneForm zoneForm = new ZoneForm();
         zoneForm.setZoneName(testZone.toString());
         String path = URLEncoder.encode("test", StandardCharsets.UTF_8);
-
         Study study = studyRepository.findByPath(path);
+        study.getZones().add(zone);
         mockMvc.perform(post("/study/"+ path +"/settings/zones/remove")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(zoneForm))
                 .with(csrf()))
                 .andExpect(status().isOk());
-
-        Zone zone = zoneRepository.findByCityAndProvince(testZone.getCity(), testZone.getProvince());
         assertThat(study.getZones().contains(zone)).isFalse();
     }
-
 }
