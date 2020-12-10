@@ -158,7 +158,7 @@ public class StudySettingController {
         Study study = studyService.getStudyTagsToUpdate(account, path);
         Tag tag = tagRepository.findByTitle(tagForm.getTagTitle());
         if(tag==null){
-            return ResponseEntity.badRequest().build();
+            tag = tagService.findOrCreateNew(tagForm.getTagTitle());
         }
         studyService.addTags(study,tag);
         return ResponseEntity.ok().build();

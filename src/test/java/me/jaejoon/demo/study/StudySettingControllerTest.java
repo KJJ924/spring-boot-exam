@@ -2,10 +2,12 @@ package me.jaejoon.demo.study;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.jaejoon.demo.WithAccountAndStudyPage;
-import me.jaejoon.demo.account.CurrentUser;
 import me.jaejoon.demo.domain.Study;
+import me.jaejoon.demo.domain.Tag;
 import me.jaejoon.demo.domain.Zone;
+import me.jaejoon.demo.form.TagForm;
 import me.jaejoon.demo.form.ZoneForm;
+import me.jaejoon.demo.tag.TagService;
 import me.jaejoon.demo.zone.ZoneRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,14 +20,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -43,8 +45,12 @@ class StudySettingControllerTest {
 
     @Autowired
     ZoneRepository zoneRepository;
+
+    @Autowired
+    TagService tagService;
     @Autowired
     StudyService studyService;
+
 
     @Test
     @DisplayName("스터디 소개 설정 페이지 보기")
@@ -184,15 +190,79 @@ class StudySettingControllerTest {
         Zone testZone = Zone.builder().city("Asan").localNameOfCity("아산시").province("South Chungcheong").build();
         Zone zone = zoneRepository.findByCityAndProvince(testZone.getCity(), testZone.getProvince());
         ZoneForm zoneForm = new ZoneForm();
+
         zoneForm.setZoneName(testZone.toString());
         String path = URLEncoder.encode("test", StandardCharsets.UTF_8);
+
         Study study = studyRepository.findByPath(path);
         study.getZones().add(zone);
+
         mockMvc.perform(post("/study/"+ path +"/settings/zones/remove")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(zoneForm))
                 .with(csrf()))
                 .andExpect(status().isOk());
         assertThat(study.getZones().contains(zone)).isFalse();
+    }
+
+    @Test
+    @DisplayName("태그 셋팅 페이지 보기")
+    @WithAccountAndStudyPage(value ="kjj924",title ="봄싹스터디",path = "test")
+    void showSettingTagPage()throws Exception{
+        String path = URLEncoder.encode("test", StandardCharsets.UTF_8);
+        mockMvc.perform(get("/study/"+path+"/settings/tags"))
+                .andExpect(model().attributeExists("account"))
+                .andExpect(model().attributeExists("study"))
+                .andExpect(model().attributeExists("tags"))
+                .andExpect(model().attributeExists("whitelist"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("study/tags"));
+    }
+
+    @Test
+    @DisplayName("태그 추가")
+    @WithAccountAndStudyPage(value ="kjj924",title ="봄싹스터디",path = "test")
+    void addTag()throws Exception{
+        String path = URLEncoder.encode("test", StandardCharsets.UTF_8);
+        TagForm tagForm = new TagForm();
+        tagForm.setTagTitle("testTag");
+
+        mockMvc.perform(post("/study/"+path+"/settings/tags/add")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(tagForm)))
+                .andExpect(status().isOk());
+
+        Study study = studyRepository.findByPath(path);
+
+        List<String> stringList = study.getTags().stream().map(Tag::getTitle).collect(Collectors.toList());
+
+        assertThat(stringList.contains("testTag")).isTrue();
+    }
+
+    @Test
+    @DisplayName("태그 삭제")
+    @WithAccountAndStudyPage(value ="kjj924",title ="봄싹스터디",path = "test")
+    void removeTag()throws Exception{
+        String path = URLEncoder.encode("test", StandardCharsets.UTF_8);
+        TagForm tagForm = new TagForm();
+        tagForm.setTagTitle("testTag");
+
+        Study study = studyRepository.findByPath(path);
+        Tag tag = tagService.findOrCreateNew(tagForm.getTagTitle());
+        studyService.addTags(study,tag);
+
+
+        mockMvc.perform(post("/study/"+path+"/settings/tags/remove")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(tagForm)))
+                .andExpect(status().isOk());
+
+
+
+        List<String> stringList = study.getTags().stream().map(Tag::getTitle).collect(Collectors.toList());
+
+        assertThat(stringList.contains("testTag")).isFalse();
     }
 }
