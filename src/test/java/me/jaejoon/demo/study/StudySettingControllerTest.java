@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -259,10 +260,89 @@ class StudySettingControllerTest {
                 .content(mapper.writeValueAsString(tagForm)))
                 .andExpect(status().isOk());
 
-
-
         List<String> stringList = study.getTags().stream().map(Tag::getTitle).collect(Collectors.toList());
 
         assertThat(stringList.contains("testTag")).isFalse();
+    }
+
+    @Test
+    @DisplayName("스터디 상태 변경 페이지")
+    @WithAccountAndStudyPage(value ="kjj924",title ="봄싹스터디",path = "test")
+    void showStudySettingStatus() throws Exception {
+        String path = URLEncoder.encode("test", StandardCharsets.UTF_8);
+
+        mockMvc.perform(get("/study/"+path+"/settings/study"))
+                .andExpect(model().attributeExists("account"))
+                .andExpect(model().attributeExists("study"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("study/study"));
+    }
+
+
+    @Test
+    @DisplayName("스터디 공개")
+    @WithAccountAndStudyPage(value ="kjj924",title ="봄싹스터디",path = "test")
+    void studyPublish() throws Exception {
+        String path = URLEncoder.encode("test", StandardCharsets.UTF_8);
+
+        mockMvc.perform(post("/study/"+path+"/settings/study/publish")
+                .with(csrf()))
+                .andExpect(flash().attributeExists("message"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/study/"+path+"/settings/study"));
+        Study study = studyRepository.findByPath(path);
+
+        assertThat(study.isPublished()).isTrue();
+    }
+
+    @Test
+    @DisplayName("스터디 비공개")
+    @WithAccountAndStudyPage(value ="kjj924",title ="봄싹스터디",path = "test")
+    void studyClose() throws Exception {
+        String path = URLEncoder.encode("test", StandardCharsets.UTF_8);
+        Study study = studyRepository.findByPath(path);
+        studyService.publish(study);
+        assertThat(study.isPublished()).isTrue();
+
+        mockMvc.perform(post("/study/"+path+"/settings/study/close")
+                .with(csrf()))
+                .andExpect(flash().attributeExists("message"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/study/"+path+"/settings/study"));
+
+        assertThat(study.isClosed()).isTrue();
+    }
+
+
+    @Test
+    @DisplayName("스터디 참여 회원 모집 ON")
+    @WithAccountAndStudyPage(value ="kjj924",title ="봄싹스터디",path = "test")
+    void startRecruit() throws Exception {
+        String path = URLEncoder.encode("test", StandardCharsets.UTF_8);
+        Study study = studyRepository.findByPath(path);
+        studyService.publish(study);
+        mockMvc.perform(post("/study/"+path+"/settings/recruit/start")
+                .with(csrf()))
+                .andExpect(flash().attributeExists("message"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/study/"+path+"/settings/study"));
+
+        assertThat(study.isRecruiting()).isTrue();
+    }
+
+    @Test
+    @DisplayName("스터디 참여 회원 모집 OFF")
+    @WithAccountAndStudyPage(value ="kjj924",title ="봄싹스터디",path = "test")
+    void stopRecruit() throws Exception {
+        String path = URLEncoder.encode("test", StandardCharsets.UTF_8);
+        Study study = studyRepository.findByPath(path);
+        studyService.publish(study);
+        mockMvc.perform(post("/study/"+path+"/settings/recruit/stop")
+                .with(csrf()))
+                .andExpect(flash().attributeExists("message"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/study/"+path+"/settings/study"));
+
+        assertThat(study.isRecruiting()).isFalse();
     }
 }
