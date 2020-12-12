@@ -238,8 +238,27 @@ public class StudySettingController {
             attributes.addFlashAttribute("studyPathError", "해당 스터디 경로는 사용할 수 없습니다");
             return "redirect:/study/"+getPath(path)+"/settings/study";
         }
-        studyService.updateStudyPath(study,newPath);
-        return "redirect:/study/"+getPath(newPath)+"/settings/study";
 
+        studyService.updateStudyPath(study,newPath);
+        attributes.addFlashAttribute("message","path 가 변경되었습니다");
+        return "redirect:/study/"+getPath(newPath)+"/settings/study";
     }
+
+    @PostMapping("/study/title")
+    public String editTitle(@CurrentUser Account account, @PathVariable String path,
+                           @RequestParam String newTitle,RedirectAttributes attributes,Model model){
+        Study study = studyService.getStudyToUpdate(account, path);
+
+        if(!studyService.isTitleValid(newTitle)){
+            model.addAttribute(study);
+            model.addAttribute(account);
+            model.addAttribute("studyTitleError","해당 스터디 이름을 사용 할 수 없습니다");
+            return "study/study";
+        }
+        attributes.addFlashAttribute("message", "스터디 이름이 변경되었습니다");
+        studyService.updateStudyTitle(study,newTitle);
+
+        return "redirect:/study/"+getPath(path)+"/settings/study";
+    }
+
 }
