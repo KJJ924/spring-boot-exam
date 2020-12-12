@@ -138,4 +138,8 @@ public class Study {
         return this.published&&this.recruitingUpdateDateTime==null||
                 this.recruitingUpdateDateTime.isBefore(LocalDateTime.now().minusHours(1));
     }
+
+    public boolean isRemovable() {
+        return !this.published;
+    }
 }
