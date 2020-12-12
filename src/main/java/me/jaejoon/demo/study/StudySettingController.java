@@ -229,4 +229,17 @@ public class StudySettingController {
         return "redirect:/study/"+getPath(path)+"/settings/study";
     }
 
+    @PostMapping("/study/path")
+    public String editPath(@CurrentUser Account account, @PathVariable String path,
+                           @RequestParam String newPath,RedirectAttributes attributes){
+        Study study = studyService.getStudyToUpdate(account, path);
+
+        if(!studyService.isPathValid(newPath)) {
+            attributes.addFlashAttribute("studyPathError", "해당 스터디 경로는 사용할 수 없습니다");
+            return "redirect:/study/"+getPath(path)+"/settings/study";
+        }
+        studyService.updateStudyPath(study,newPath);
+        return "redirect:/study/"+getPath(newPath)+"/settings/study";
+
+    }
 }

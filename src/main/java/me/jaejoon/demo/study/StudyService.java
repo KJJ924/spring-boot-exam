@@ -115,4 +115,15 @@ public class StudyService {
     public void stopRecruit(Study study) {
         study.stopRecruiting();
     }
+
+    public boolean isPathValid(String newPath) {
+        if(!newPath.matches("^[ㄱ-ㅎ가-힣a-z0-9_-]{2,20}$")){
+            return false;
+        }
+        return !studyRepository.existsByPath(newPath);
+    }
+
+    public void updateStudyPath(Study study, String newPath) {
+        study.setPath(newPath);
+    }
 }
