@@ -365,4 +365,22 @@ class StudySettingControllerTest {
         assertThat(originPath).isFalse();
         assertThat(studyRepository.findByPath("변경")).isNotNull();
     }
+
+    @Test
+    @DisplayName("스터디 Title 수정")
+    @WithAccountAndStudyPage(value ="kjj924",title ="봄싹스터디",path = "test")
+    void editTitle() throws Exception{
+        String path = URLEncoder.encode("test", StandardCharsets.UTF_8);
+
+        mockMvc.perform(post("/study/"+path+"/settings/study/title")
+                .with(csrf())
+                .param("newTitle","제목변경"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/study/"+path+"/settings/study"))
+                .andExpect(flash().attributeExists("message"));
+
+        Study study = studyRepository.findByPath(path);
+        
+        assertThat(study.getTitle()).isEqualTo("제목변경");
+    }
 }
