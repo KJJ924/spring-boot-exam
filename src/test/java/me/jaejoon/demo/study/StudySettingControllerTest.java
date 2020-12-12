@@ -345,4 +345,24 @@ class StudySettingControllerTest {
 
         assertThat(study.isRecruiting()).isFalse();
     }
+
+    @Test
+    @DisplayName("스터디 Path 수정")
+    @WithAccountAndStudyPage(value ="kjj924",title ="봄싹스터디",path = "test")
+    void editPath() throws Exception{
+        String path = URLEncoder.encode("test", StandardCharsets.UTF_8);
+        String editPath = URLEncoder.encode("변경", StandardCharsets.UTF_8);
+
+        mockMvc.perform(post("/study/"+path+"/settings/study/path")
+                .with(csrf())
+                .param("newPath","변경"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/study/"+editPath+"/settings/study"))
+                .andExpect(flash().attributeExists("message"));
+
+        boolean originPath = studyRepository.existsByPath(path);
+
+        assertThat(originPath).isFalse();
+        assertThat(studyRepository.findByPath("변경")).isNotNull();
+    }
 }
