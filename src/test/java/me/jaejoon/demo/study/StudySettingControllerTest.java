@@ -20,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -380,7 +379,7 @@ class StudySettingControllerTest {
                 .andExpect(flash().attributeExists("message"));
 
         Study study = studyRepository.findByPath(path);
-        
+
         assertThat(study.getTitle()).isEqualTo("제목변경");
     }
 }
