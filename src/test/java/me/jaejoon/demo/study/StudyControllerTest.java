@@ -1,6 +1,7 @@
 package me.jaejoon.demo.study;
 
 import me.jaejoon.demo.WithAccount;
+import me.jaejoon.demo.WithAccountAndStudyPage;
 import me.jaejoon.demo.account.AccountRepository;
 import me.jaejoon.demo.domain.Account;
 import me.jaejoon.demo.domain.Study;
@@ -133,5 +134,33 @@ class StudyControllerTest {
                 .andExpect(model().attributeExists("study"));
     }
 
+    @Test
+    @DisplayName("스터디 맴버 join")
+    @WithAccountAndStudyPage(value = "kjj924",path = "test", title = "testTitle")
+    void memberJoin() throws Exception {
+        String path = URLEncoder.encode("test", StandardCharsets.UTF_8);
+        mockMvc.perform(get("/study/"+path+"/join"))
+                .andExpect(status().is3xxRedirection());
+
+        Account joinMember = accountRepository.findByNickname("kjj924");
+        Study study = studyRepository.findByPath(path);
+
+        assertThat(study.getMembers().contains(joinMember)).isTrue();
+    }
+
+    @Test
+    @DisplayName("스터디 맴버 탈퇴")
+    @WithAccountAndStudyPage(value = "kjj924",path = "test", title = "testTitle")
+    void leaveJoin() throws Exception {
+        String path = URLEncoder.encode("test", StandardCharsets.UTF_8);
+        Account joinMember = accountRepository.findByNickname("kjj924");
+        Study study = studyRepository.findByPath(path);
+        study.getMembers().add(joinMember);
+
+        mockMvc.perform(get("/study/"+path+"/leave"))
+                .andExpect(status().is3xxRedirection());
+
+        assertThat(study.getMembers().contains(joinMember)).isFalse();
+    }
 
 }
